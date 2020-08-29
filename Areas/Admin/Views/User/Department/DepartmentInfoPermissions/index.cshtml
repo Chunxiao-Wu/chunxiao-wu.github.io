@@ -1,0 +1,160 @@
+﻿<style>
+ul#tableList {height: 100%;width: 100%;padding-bottom: 15px;}
+ul#tableList li {height: 40px;border-bottom: 1px solid #ddd;line-height:40px;padding-left:15px;}
+ul#tableList li:last-child {border-bottom: 0px;}
+ul#tableList li:hover, ul li.active {background: #fff;cursor: pointer;}
+.table thead tr td{padding-left:10px !important;}
+.table tr.item td{vertical-align:top;}
+.table tr.item:hover td{background-color:#fff;}
+.table tr.item td:first-child{background-color:#eee;padding-bottom:20px;padding:0px !important;}
+</style>
+<div class="main" id="main">
+    <table border=0 cellpadding=0 cellspacing=0 class="table table-bordered">
+        <thead>
+            <tr>
+                <td width="180">选择表</td>
+                <td>权限设置</td>
+            </tr>
+        </thead>
+        <tr class="item list-template-item">
+            <td>
+                <ul id="tableList">
+                    <li v-bind:class="[tableInfo.TableId==item.Id ? 'active' : '']" v-on:click="setTableId(item)" v-for="item in infoTableList" class="item list-template-item">{{item.Remark}}<b class="caret"></b></li>
+                </ul>
+            </td>
+            <td>
+                <el-form ref="form" label-width="120px" label-position="left" style="width:100%;">
+                    <el-form-item :label="tableInfo.Name">
+                        <el-radio-group v-model="setData.Open">
+                            <el-radio :label=1>开启管理</el-radio>
+                            <el-radio :label=0>关闭管理</el-radio>
+                        </el-radio-group>
+                        <span class="help-block validate-tips-box"></span>
+                    </el-form-item>
+                    <div v-if="setData.Open==1">
+                        <el-form-item label="添加权限">
+                            <el-radio-group v-model="setData.CanAdd">
+                                <el-radio :label=1>是</el-radio>
+                                <el-radio :label=0>否</el-radio>
+                            </el-radio-group>
+                            <span class="help-block validate-tips-box"></span>
+                        </el-form-item>
+                        <el-form-item label="修改权限">
+                            <el-radio-group v-model="setData.CanEdit">
+                                <el-radio :label=2>可修改所有信息</el-radio>
+                                <el-radio :label=1>只能修改未审核信息</el-radio>
+                                <el-radio :label=0>无</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="删除权限">
+                            <el-radio-group v-model="setData.CanDelete">
+                                <el-radio :label=2>可删除所有信息</el-radio>
+                                <el-radio :label=1>只能删除未审核信息</el-radio>
+                                <el-radio :label=0>无</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="新增信息">
+                            <el-radio-group v-model="setData.AddDefaultState">
+                                <el-radio :label=1>默认通过审核</el-radio>
+                                <el-radio :label=0>需要审核</el-radio>
+                            </el-radio-group>
+                            <span class="help-block validate-tips-box"></span>
+                        </el-form-item>
+                        <el-form-item label="修改已审核信息">
+                            <el-radio-group v-model="setData.EditDefaultState">
+                                <el-radio :label=1>默认通过审核</el-radio>
+                                <el-radio :label=0>需要重新审核</el-radio>
+                            </el-radio-group>
+                            <span class="help-block validate-tips-box"></span>
+                        </el-form-item>
+                        <el-form-item label="退回的信息" v-show="false">
+                            <el-radio-group v-model="setData.CanResubmitCheck">
+                                <el-radio :label=1>可重新提交审核</el-radio>
+                                <el-radio :label=0>不可再提交进行审核</el-radio>
+                            </el-radio-group>
+                            <span class="help-block validate-tips-box"></span>
+                        </el-form-item>
+                        <el-form-item label="发布页属性设置" v-show="false">
+                            <el-checkbox v-model="setData.CanSetGoodProperty" :false-label=0 :true-label=1>推荐属性</el-checkbox>
+                            <el-checkbox v-model="setData.CanSetHotProperty" :false-label=0 :true-label=1>热门属性</el-checkbox>
+                            <el-checkbox v-model="setData.CanSetTopProperty" :false-label=0 :true-label=1>置顶属性</el-checkbox>
+                        </el-form-item>
+                        <el-form-item label="最大信息发布数">
+                            <el-input v-model="setData.MaxNum" style="width:150px;" maxlength="8"></el-input>
+                            <span class="help-block validate-tips-box">0则表示不限制</span>
+                        </el-form-item>
+                        <el-form-item label="信息栏目权限">
+                            <ui-cascader v-model="setData.ColumnIds" style="width:90%" :options="columnDataList" :props="{ expandTrigger: 'hover',multiple: true}"></ui-cascader>
+                            <span class="help-block validate-tips-box">不设置则默认有所有栏目权限</span>
+                        </el-form-item>
+                    </div>
+                </el-form>
+            </td>
+        </tr>
+    </table>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+    <div class="text-gray" style="margin-top:10px;"><span class="fa fa-info-circle"></span> 部门投稿权限只作用会员中心，设置的权限会和会员组权限合并（并集）。</div>
+</div>
+<script type="text/javascript">
+    var infoTableList =@Html.Raw(Html.GetInfoTableListJson());
+    var tableId = infoTableList[0].Id;
+    var name = infoTableList[0].Remark;
+    var departmentId = request("departmentId");
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            infoTableList: infoTableList,
+            tableInfo: { TableId: tableId, Name: name },
+            columnDataList: [],
+            setData: {},
+        },
+        methods: {
+            loadData: function () {
+                loadData();
+            },
+            setTableId: function (row) {
+                this.tableInfo.TableId = row.Id;
+                this.tableInfo.Name = row.Remark;
+                this.loadData();
+            },
+            postSubmit: function () {
+                this.setData.TableId = this.tableInfo.TableId;
+                this.submit({ url: "@Url.ActionUrl("SaveSet")", data: this.setData, success: "loadData()" });
+            }
+        },
+        watch: {
+            "tableInfo.TableId": {
+                handler: function (newTableId, oldTableId) {
+                    if (newTableId != oldTableId) {
+                        this.setData.TableId = newTableId;
+                    }
+                },
+            },
+        }
+    });
+    function loadData() {
+        vue.ajax({
+            url: "@Url.ActionUrl("GetSet")",
+            data: { departmentId: departmentId, tableId: vue.tableInfo.TableId },
+            success: function (data) {
+                if (data == "") {
+                    vue.setData = { Id: 0, Open: 0, DepartmentId: departmentId, TableId: tableId, CanAdd: 1, CanEdit: 2, CanDelete: 1, CanSetTopProperty: 0, CanSetGoodProperty: 0, CanSetHotProperty: 0, MaxNum: 0, AddDefaultState: 0, EditDefaultState: 0, ColumnIds: [], CanResubmitCheck: 0, CanDraft: 0 };
+                } else {
+                    vue.setData = data;
+                }
+            }
+        });
+        vue.ajax({
+            url: "@Url.ActionUrl("GetColumnTree", "column")?tableId=" + vue.tableInfo.TableId,
+            success: function (data) {
+                vue.columnDataList = data;
+            }
+        });
+        
+    }
+    loadData();
+</script>

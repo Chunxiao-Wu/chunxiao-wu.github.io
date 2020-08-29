@@ -1,0 +1,110 @@
+﻿<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i><a href="javascript:void(0)" onclick="location.href=location.href">网站日志</a></el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <template>
+        <el-tabs v-model="queryData.logType" type="card" @@tab-click="loadData">
+            <el-tab-pane label="管理员操作" name="3"></el-tab-pane>
+            <el-tab-pane label="管理员登录" name="5"></el-tab-pane>
+            <el-tab-pane label="会员登录" name="6"></el-tab-pane>
+            <el-tab-pane label="自动任务" name="2"></el-tab-pane>
+            <el-tab-pane label="错误" name="1"></el-tab-pane>
+            <el-tab-pane label="应用程序" name="0"></el-tab-pane>
+            <el-tab-pane label="升级" name="11"></el-tab-pane>
+            <el-tab-pane label="其他" name="100"></el-tab-pane>
+        </el-tabs>
+    </template>
+    <table border=0 cellpadding=0 cellspacing=0 class="tb-head form-inline form-group-sm">
+        <tr>
+            <td>
+                <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{ids:getSelectedPropertys(selectList,'Id')},confirmMsg:'确定删除吗？',success:'loadData()',beforeExecute:function(){return checkSelectedItems(selectList)},})">
+                    删除
+                </el-button>
+            </td>
+            <td align="right">
+                <div class="form-inline">
+                    <template>
+                        <el-select v-model="queryData.fieldName" size="small" placeholder="请选择">
+                            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                        <el-date-picker v-model="queryData.fieldValue" v-if="queryData.fieldName=='thedate'"
+                                        type="daterange"
+                                        size="small"
+                                        value-format="yyyy-MM-dd"
+                                        range-separator="至"
+                                        start-placeholder="开始日期"
+                                        end-placeholder="结束日期">
+                        </el-date-picker>
+                        <el-input style="width:225px;" size="small" v-model="queryData.fieldValue" v-else placeholder="请输入内容"></el-input>
+                        <el-button size="small" v-on:click="loadData()">搜索</el-button>
+                    </template>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div class="table-list-box">
+        <template>
+            <el-table ref="multipleTable" :data="dataList" tooltip-effect="dark" highlight-current-row  style="width: 100%" v-on:selection-change="handleSelectionChange" border>
+                <el-table-column type="selection" width="40"> </el-table-column>
+                <el-table-column label="日志" prop="Message" align="left" :show-overflow-tooltip="true"></el-table-column>
+                <el-table-column label="Url" prop="Url" v-if="queryData.logType=='3'||queryData.logType=='5'||queryData.logType=='6'" align="left" width="300"></el-table-column>
+                <el-table-column label="Ip" prop="Ip" v-if="queryData.logType=='3'||queryData.logType=='5'||queryData.logType=='6'" align="center" width="150"></el-table-column>
+                <el-table-column label="User" prop="Username" v-if="queryData.logType=='3'||queryData.logType=='5'||queryData.logType=='6'" align="center" width="150"></el-table-column>
+                <el-table-column label="Date" prop="Thedate" align="center" width="200"></el-table-column>
+            </el-table>
+        </template>
+    </div>
+    <ui-page-panel v-if="pageInfo.RecordCount>0" v-model="pageInfo" v-on:change="loadData"></ui-page-panel>
+</div>
+<script type="text/javascript">
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            dataList: [],
+            options: [{ value: 'message', label: '按日志内容搜索' }, { value: 'username', label: '按用户名搜索' }, { value: 'url', label: '按url搜索' }, { value: 'ip', label: '按Ip搜索' }, { value: 'thedate', label: '按时间范围' }],
+            selectList: [],
+            pageInfo: { PageSize: 15, CurrentPage: 1, PageCount: 0, RecordCount: 0 },
+            queryData: { fieldName: "message", fieldValue: "", logType:"3"}
+        },
+        methods: {
+            loadData: function () {
+                loadData();
+            },
+            handleSelectionChange: function(val) {
+                this.selectList = val;
+            }
+        },
+        watch: {
+            "queryData.fieldName": {
+                handler: function(newName, oldName) {
+                    if (newName != oldName)
+                    {
+                        this.queryData.fieldValue = "";
+                    }
+                },
+            }
+        }
+    });
+    //加载数据
+    function loadData() {
+        var serverData = '{"' + vue.queryData.fieldName + '":"' + vue.queryData.fieldValue + '","logType":"' + vue.queryData.logType + '"}';
+        serverData = extend(JSON.parse(serverData), vue.pageInfo);
+        vue.ajax({
+            url: "@Url.ActionUrl("PageListData")",
+            data: serverData,
+            success: function (responseData) {
+                vue.dataList = responseData.Data;
+                vue.pageInfo = responseData.PageInfo;
+            }
+        });
+    }
+    loadData();
+
+</script>
+
+
+
+

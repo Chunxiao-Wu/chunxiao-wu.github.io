@@ -1,0 +1,58 @@
+﻿@model string
+<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i><a href="javascript:void(0)" onclick="location.href=location.href">缓存管理</a></el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="menu-bar-box">
+        <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{name:getSelectedPropertys(selectList,'Name')},confirmMsg:'确定删除吗？',success:'loadData()',beforeExecute:function(){return checkSelectedItems(selectList)},})">
+            删除
+        </el-button>
+    </div>
+    <div class="table-list-box">
+        <template>
+            <el-table ref="multipleTable" :data="dataList" tooltip-effect="dark" highlight-current-row  style="width: 100%" v-on:selection-change="handleSelectionChange" border>
+                <el-table-column type="selection" width="40"> </el-table-column>
+                <el-table-column label="键名" prop="Name" align="left"></el-table-column>
+                <el-table-column label="键值" prop="Value" align="left"></el-table-column>
+            </el-table>
+        </template>
+    </div>
+    <ui-page-panel v-if="pageInfo.RecordCount>0" v-model="pageInfo" v-on:change="loadData"></ui-page-panel>
+</div>
+<script type="text/javascript">
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            dataList: [],
+            selectList: [],
+            pageInfo: { PageSize: 15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+        },
+        methods: {
+            loadData: function () {
+                loadData();
+            },
+            handleSelectionChange: function(val) {
+                this.selectList = val;
+            }
+        },
+    });
+    //加载数据
+    function loadData() {
+        var serverData = extend({}, vue.pageInfo);
+        vue.ajax({
+            url: "@Url.ActionUrl("PageListData")",
+            data: serverData,
+            success: function (data) {
+                vue.dataList = data.Data;
+                vue.pageInfo = data.PageInfo;
+            }
+        });
+    }
+    loadData();
+
+</script>
+
+

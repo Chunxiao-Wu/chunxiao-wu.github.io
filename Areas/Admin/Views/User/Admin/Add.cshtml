@@ -1,0 +1,94 @@
+﻿<div class="main" id="main">
+    <el-form ref="form" label-width="180px" label-position="left" data-source="@Model">
+        <el-form-item label="选择用户" v-show="formData.Id<=0">
+            <div>
+                <ui-select-popup  style="width:700px;"  v-model="formData.Uids" :options='memberList' url="@Url.ActionUrl("PopupPageList", "Member")?fieldName=username"
+                                 :multiple="true" btnTitle="选择用户组" title="选择用户" width="60%" height="90%"
+                                 v-validate="{data:formData.Uids,ignore:formData.Id>0,dataType:'*',nullMsg:'请选择要设置为管理员的用户！'}"></ui-select-popup>
+            </div>
+            <span class="help-block validate-tips-box">选择要设置为管理员的用户,支持同时添加多个管理员</span>
+        </el-form-item>
+        <el-form-item label="管理用户" v-show="formData.Id>0">
+            <div>
+                <el-input v-model="formData.Username" style="width:700px;" disabled></el-input>
+            </div>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+        <el-form-item label="管理员角色">
+            <ui-select v-model="formData.RoleId" :clearable="true" style="width:700px;" v-bind:options="@Html.GetOptionsJson("pa_role")" v-validate="{data:formData.RoleId,dataType:'*',nullMsg:'请选择管理角色！'}"></ui-select>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+        <el-form-item label="备注">
+            <el-input v-model="formData.Remark" style="width:700px;"></el-input>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+        <el-form-item label="选择可管理的站点">
+            <ui-select v-model="formData.SiteIds" :multiple="true" style="width:700px;" v-bind:options="@Html.GetOptionsJson("pa_site")"></ui-select>
+            <span class="help-block validate-tips-box">不选择则默认可以管理所有站点，超级管理员不受此设置限制。</span>
+        </el-form-item>
+        <el-form-item label="选择默认管理的站点">
+            <ui-select v-model="formData.DefaultSiteId" style="width:700px;" v-bind:options="@Html.GetOptionsJson("pa_site")" v-validate="{data:formData.DefaultSiteId,dataType:'*',nullMsg:'请选择默认站点'}"></ui-select>
+            <span class="help-block validate-tips-box">如果是非超级管理员，默认站点必须属于可管理的站点。</span>
+        </el-form-item>
+        <el-form-item label="选择可管理的用户组">
+            <ui-select v-model="formData.MemberGroupIds" :multiple="true" style="width:700px;" v-bind:options="@Html.GetOptionsJson("pa_member_group", "name", "", "Rank asc")"></ui-select>
+            <span class="help-block validate-tips-box">不选择则默认可管理所有会员组，超级管理员不受此设置限制。</span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+         //注册树组件
+    var formData =@Html.RawModel((string)Model);
+    var id = request("id");
+    if (id != "") {
+        formData.Uids = "";
+    }
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            formData: formData,
+            memberList:[],
+        },
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({});//表单验证
+                if (validated) {
+                    if (this.formData.RoleId != 1)
+                    {
+                        var siteIds = this.formData.SiteIds;
+                        if (siteIds != undefined && siteIds != null && siteIds != "") {
+                            var isTrue = false;
+                            siteIds.split(",").some(function (val) {
+                                if (val == this.formData.DefaultSiteId.toString()) {
+                                    isTrue = true;
+                                    return isTrue;
+                                }
+                            })
+                            if (!isTrue) {
+                                this.$message({
+                                    message: "默认站点必须包含在可管理的站点中!",
+                                    type: 'error',
+                                    duration: 0,
+                                    showClose: true
+                                });
+                                return false;
+                            }
+                        }
+                    }
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, success: "PostBack()" });
+                }
+            }
+        },
+    });
+    function PostBack() {
+        if (id == "") {
+            location.href = location.href;
+        }
+        parent.loadData();
+    }
+</script>

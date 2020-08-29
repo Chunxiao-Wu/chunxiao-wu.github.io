@@ -1,0 +1,103 @@
+﻿@{
+    var act = Request.QueryString["act"];
+    PageAdmin.BLL.PluginInfo pluginInfo = ViewBag.PluginInfo;
+    var pluginName = pluginInfo.Plugin;
+    var version = pluginInfo.Version;
+}
+
+<div class="main" id="main">
+    <el-breadcrumb class="breadcrumb" separator="/">
+        <el-breadcrumb-item>插件</el-breadcrumb-item>
+        <el-breadcrumb-item>@pluginInfo.Name</el-breadcrumb-item>
+    </el-breadcrumb>
+    <div class="open-remark  hide alert alert-warning" v-if="vueData.act=='open'">
+        <span class="help-block">
+            <i class="fa fa-info-circle"></i>说明：<br />
+            1、插件的安装会导致网站重启，建议在网站访客少的时段进行操作。<br />
+            2、后台插件默认安装在我的工作台>>我的应用下，安装后可以在系统管理>>管理菜单中调整位置。<br />
+            3、会员插件默认安装在我的账户>>我的菜单，安装后可以在系统管理>>会员菜单中调整位置。<br />
+            4、插件安装完毕后，刷新整个网站页面即可看到新添加的插件菜单。<br />
+            <span style="color:#ff0000">5、插件将会直接将代码安装到网站服务器，非官方认证的插件请谨慎安装，造成后果自行负责。</span>
+        </span>
+    </div>
+
+    <div class="close-remark  hide alert alert-warning" v-if="vueData.act=='close'">
+        <span class="help-block">
+            <i class="fa fa-info-circle"></i>说明：<br />
+            1、插件的关闭会导致网站重启，建议在网站访客少的时段进行操作。<br />
+            2、关闭插件会暂停插件菜单，再次安装时候会再重新开启，之前的数据还保留。<br />
+            3、插件关闭后，刷新整个网站页面后插件菜单将不再显示。
+        </span>
+    </div>
+
+    <div class="unload-remark hide alert alert-warning" v-if="vueData.act=='uninstall'">
+        <span class="help-block">
+            <i class="fa fa-info-circle"></i>说明：<br />
+            1、插件卸载会删除整个插件相关的菜单、文件和数据，且不可恢复。<br />
+            2、如果插件中带有重要数据，请谨慎操作，建议您先做好数据库备份和网站备份。<br />
+        </span>
+    </div>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit" disabled v-show="vueData.act=='open'&&disableds==true">插件名称或版本号未定义</el-button>
+        <el-button type="primary" v-on:click="postSubmit" v-show="vueData.act=='open'&&disableds==false">开启插件</el-button>
+        <el-button type="primary" v-on:click="postSubmit" v-show="vueData.act=='close'">关闭插件</el-button>
+        <el-button type="primary" v-on:click="postSubmit" v-show="vueData.act=='uninstall'">卸载插件</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            vueData: { version: "1.0.0", pluginName: "@Request.QueryString["pluginName"]", act:"@Request.QueryString["act"]"},
+        },
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({ beforeSubmit: function () { return beforeSubmitExecute() }, tipsStyle: 1 });//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl("Set")", confirmMsg: '是否确定？', data: this.vueData, success: callback });
+                }
+            },
+        },
+        computed: {
+            disableds: function () {
+                var value = false;
+                if (this.vueData.act == "open") {
+                    if (this.vueData.pluginName == "" || this.vueData.version == "") {
+                        value = true;
+                    }
+                }
+                return value;
+            }
+        }
+    });
+
+
+    function callback() {
+        if (vue.vueData.act == "open" || vue.vueData.act =="close")
+        {
+            var url = "@Url.ActionUrl("RestartApplication", "Default")";
+            vue.submit({
+                async: false, url: url,showSuccessMsg:false,success: function () {
+                    closeParent();
+                }
+            });
+        }
+        else if (vue.vueData.act == "uninstall")
+        {
+           var url = "@Url.ActionUrl("Unload")";
+           vue.submit({
+              data: { pluginName: vue.vueData.pluginName }, showSuccessMsg:false,url: url, success: function () {
+                    closeParent();
+                }
+            });
+        }
+    }
+
+    function closeParent()
+    {
+        parent.loadData();
+        closeSelf();
+    }
+</script>

@@ -1,0 +1,170 @@
+﻿<style type="text/css">
+    .dropdowndiv{line-height:25px;padding:15px;}
+    .danger{color:#F56C6C}
+    .success{color:#67C23A}
+</style>
+<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item onclick="location.href=location.href"><i class="fa fa-home fa-fw"></i>在线更新</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div style="padding:5px 15px;margin-bottom:30px;">
+        <el-steps :active="active" finish-status="success" simple>
+            <el-step title="检测更新"></el-step>
+            <el-step title="下载升级文件"></el-step>
+            <el-step title="重启网站进程"></el-step>
+            <el-step title="更新网站文件"></el-step>
+            <el-step title="升级完毕"></el-step>
+        </el-steps>
+    </div>
+    <el-form ref="form" label-width="100px" label-position="left">
+        <el-form-item label="当前版本">
+            @ViewBag.CurrentVersion
+        </el-form-item>
+        <el-form-item label="待升级版本" v-if="upgradeListShow">
+            <ul id="upgradeList">
+                <li class="item list-template-item" style="cursor:pointer;" v-for="(item,index) in upgradeList">
+                    <el-dropdown>
+                        <div size="small">
+                            {{index+1}}、版本V{{item.Version}}，发布时间：{{item.UpgradeDate}}<i class="el-icon-arrow-down el-icon--right" style="font-size:12px;"></i>
+                        </div>
+                        <el-dropdown-menu slot="dropdown">
+                            <div class="dropdowndiv">
+                                <span>v{{item.Version}}更新说明：</span>
+                            </div>
+                            <div class="dropdowndiv">
+                                <p v-html="item.Introduction"></p>
+                            </div>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </li>
+            </ul>
+        </el-form-item>
+        <el-form-item label="升级日志" v-show="logs.length>0">
+            <ul>
+                <li v-for="item in logs" v-html="item"></li>
+            </ul>
+        </el-form-item>
+
+        <el-form-item label="">
+            <el-button type="primary" size="small" :disabled="checkDisabled" v-show="upgradeListShow==false" v-on:click="checkUpgrade">{{checkUpgradeText}}</el-button>
+            <el-button type="primary" size="small" :disabled="upgradeDisabled" v-show="upgradeListShow" v-on:click="downLoad(0)">{{upgradeText}}</el-button>
+        </el-form-item>
+    </el-form>
+    <div class="alert alert-warning alert-dismissible" style="margin-top:25px;">
+        <strong><i class="fa fa-info-circle"></i> 说明</strong>
+        <p>1、尽量在访客少时候升级，升级过程中请不要关闭浏览器。</p>
+        <p>2、升级过程中会导致网站进程重启。</p>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            logs:[],
+            active:0,
+            checkUpgradeText: "检测更新",
+            checkUpgradeList: [{ type: "info", label: "检测更新", className: "" }, { type: "info", label: "下载升级文件", className: "" }, { type: "info", label: "重启网站进程", className: "" }, { type: "info", label: "更新网站文件", className: "" }, { type: "info", label: "升级完毕", className: "" }],
+            upgradeList: [],
+            upgradeText: "开始升级",
+            upgradeListShow: false,
+            upgradeDisabled: false,
+            checkDisabled:false,
+        },
+        methods: {
+            checkUpgrade: function () {
+                var _this = this;
+                _this.checkUpgradeText = "检测中...";
+                _this.ajax({
+                    url: "@Url.ActionUrl("GetUpgradeList")", async: true, success: function (tipsInfo) {
+                        var state = tipsInfo.State;
+                        var upgradeList = tipsInfo.Data;//upgradeList为全局
+                        var msg = tipsInfo.Msg;
+                        if (upgradeList.length == 0) {
+                            _this.checkUpgradeText = "检测完毕";
+                            _this.logs.push(msg);
+                            _this.checkDisabled = true;
+                        }
+                        else {
+                            _this.upgradeListShow = true;
+                            _this.upgradeList = upgradeList;
+                            if (state == 0) {
+                                _this.logs.push("<span class='danger'>"+msg+"</span>");
+                                _this.upgradeDisabled = true;
+                            }
+                        };
+                        _this.active = 1;
+                    }
+                });
+            },
+
+            downLoad: function (index) {//重启进程
+                var _this = this;
+                if (index >= _this.upgradeList.length) {
+                    _this.restartApplication();
+                    return;
+                }
+                _this.upgradeText = "升级中...";
+                _this.upgradeDisabled = true;
+                _this.active =2;
+
+                var upgradeData = _this.upgradeList[index];
+                var version = upgradeData.Version;
+                var package = upgradeData.Package;
+                _this.logs.push("开始下载" + version + "版本升级包...");
+                _this.ajax({
+                    url: "@Url.ActionUrl("DownLoad")", type: "post", data: { version: version, package: package }, success: function (tipsInfo) {
+                        if (tipsInfo.State == 1) {
+                            _this.logs.push("<span>V" + version + "升级包下载完毕</span>");
+                            index++;
+                            setTimeout(function () { _this.downLoad(index); }, 1000);
+                        } else {
+                            _this.logs.push("<span class='danger'>" + tipsInfo.Msg + "</span>");
+                        }
+                    }, error: function (xhr) {
+                        _this.logs.push("<span class='danger'>V" +version+"升级包下载失败</span>");
+                    }
+                });
+            },
+            restartApplication: function () {
+                var _this = this;
+                _this.active = 3;
+                _this.logs.push("开始重启网站进程...");
+                _this.ajax({
+                    url: "@Url.ActionUrl("RestartApplication")", type: "post", success: function (tipsInfo) {
+                        if (tipsInfo.State == 1) {
+                            _this.logs.push("网站重启完毕");
+                            _this.visitor();
+                        } else {
+                            _this.logs.push("<span class='danger'>" + tipsInfo.Msg+"</span>");
+                        }
+                    }
+                });
+            },
+            visitor: function () {
+                var _this = this;
+                _this.active = 4;
+                _this.logs.push("开始更新升级文件..");
+                _this.ajax({
+                    url: "@Url.ActionUrl("Visitor")", type: "post", success: function (tipsInfo) {
+                        if (tipsInfo.State == 1) {
+                            _this.logs.push("文件更新完毕!");
+                            _this.active = 5;
+                            _this.logs.push("<span class='success'>已经升级到最新版本!</span>");
+                            _this.upgradeText = "升级完毕";
+                        } else {
+                            _this.logs.push("<span class='danger'>" + tipsInfo.Msg + "</span>");
+                        }
+                    }
+                });
+            }
+        }
+    });
+</script>
+
+
+
+
+

@@ -1,0 +1,18 @@
+﻿@{
+    IEnumerable<dynamic> canAdminTableList = ViewBag.CanAdminTableList;
+    int i = 0;
+}
+<div class="_frame_layout_menu">
+    <label>标签分类</label>
+    <div>
+        <ul>
+            @foreach (var item in canAdminTableList)
+            {
+                <li v-on:click.stop="clickEvent(item.Id)">
+                    <a href="@Url.ActionUrl("Index","Tag")?tableid=@item.Id">@(item.Remark)</a>
+                </li>
+                i++;
+            }
+        </ul>
+    </div>
+</div>

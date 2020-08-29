@@ -1,0 +1,170 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/_LayoutFramePage.cshtml";
+    CurrentUser user = ViewBag.CurrentUser;
+    int tableId = ViewBag.TableId;
+    IEnumerable<dynamic> fieldData = Html.GetFieldList("pa_tag", "list", user);
+
+}
+<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i>@ViewBag.TableName</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <table border=0 cellpadding=0 cellspacing=0 class="tb-head form-inline form-group-sm">
+        <tr>
+            <td>
+                <el-tooltip effect="dark" content="添加标签" placement="bottom-start">
+                    <el-button size="small" v-on:click="dialog({title:'添加',url:'@Url.ActionUrl("Add")?tableId=@tableId',width:'80%',height:'80%',target:'self'})">添加</el-button>
+                </el-tooltip>
+               
+                <el-dropdown>
+                    <el-button size="small">
+                        功能菜单<i class="el-icon-arrow-down el-icon--right"></i>
+                    </el-button>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("CountTagData")?tableId=@tableId',successMsg:'关联数据统计中，请稍后查看!'})">统计关联数据</a></el-dropdown-item>
+                        <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{ids:getSelectedPropertys(selectList,'Id')},confirmMsg:'确定删除吗？',success:function(){loadData()},beforeExecute:function(){return checkSelectedItems(selectList)}})">删除</a></el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+            </td>
+            <td align="right">
+                <el-select size="small" v-model="searchInfo.orderBy" placeholder="选择排序方式" clearable v-on:change="loadData">
+                    <el-option value="id desc" label="按id↓"></el-option>
+                    <el-option value="id asc" label="按id↑"></el-option>
+                    @foreach (var item in fieldData.Where(c => c.OrderItem == 1))
+                    {
+                        <el-option value="@(item.Name) desc" label="按@(item.Remark)↓"></el-option>
+                        <el-option value="@(item.Name) asc" label="按@(item.Remark)↑"></el-option>
+                    }
+                    <el-option value="Count asc" label="按信息总数↑"></el-option>
+                    <el-option value="Count desc" label="按信息总数↓"></el-option>
+                </el-select>
+                <el-select size="small" placeholder="选择搜索字段" v-model="searchInfo.searchField">
+                    @foreach (var item in fieldData.Where(c => c.SearchType != ""))
+                    {
+                        <el-option value="@(item.Name)" label="按@(item.Remark)搜索"></el-option>
+                    }
+                    <el-option value="name" label="标签"></el-option>
+                </el-select>
+                <el-input size="small" style="width:150px;" placeholder="搜索关键词" v-model="searchInfo.searchKeyword"></el-input>
+                <el-button size="small" v-on:click="loadData">搜索</el-button>
+            </td>
+        </tr>
+    </table>
+    <el-table :data="dataList" row-key="Id" tooltip-effect="dark" border highlight-current-row style="width: 100%" v-on:selection-change="handleSelectionChange">
+        <el-table-column type="selection" align="center" width="40"> </el-table-column>
+        <el-table-column align="center" label="Id" prop="Id" width="100"></el-table-column>
+        <el-table-column header-align="center" label="标签" prop="Name" :show-overflow-tooltip="true"></el-table-column>
+        @foreach (var item in fieldData)
+        {
+            int fieldId = item.Id;
+            int listWords = item.ListWords;
+            string remark = item.Remark;
+            string field = StringHelper.FirstCharUpper(item.Name);
+            string fieldType = item.FieldType;
+            string valueType = item.ValueType;
+            string width = item.ListWidth;
+            if (!string.IsNullOrEmpty(width))
+            {
+                width = " width=\"" + width + "\" ";
+            }
+            string align = "center";
+            if (valueType == "nvarchar" || valueType == "text")
+            {
+                if (fieldType != "image" && fieldType != "file")
+                {
+                    align = "left";
+                }
+            }
+            <el-table-column align="@align" label="@remark" @Html.Raw(width) :show-overflow-tooltip="true" header-align="center">
+                <template slot-scope="scope">
+                    @if (new string[] { "images", "files" }.Contains(fieldType))
+                    {
+                        <span>-</span>
+                    }
+                    else if (new string[] { "subtable" }.Contains(fieldType))
+                    {
+                        string subTableType = item.SubTableType;
+                        string bt_text = StringHelper.Format<string>(item.BtText);
+                        string win_width = StringHelper.Format<string>(item.WinWidth);
+                        string win_height = StringHelper.Format<string>(item.WinHeight);
+                        <span>
+                            <el-button size="small" v-on:click="dialog({title:'@(remark)',url:'/E/SubData/@(subTableType=="multiple"?"":"Set")?parentId='+scope.row.Id+'&fieldId=@fieldId',width:'@win_width',height:'@win_height',target:'self'})">@(bt_text)</el-button>
+                        </span>
+                    }
+                    else if (fieldType == "image")
+                    {
+                        <a :href="scope.row.@field" target="_blank" v-show="scope.row.@field!=''"><img :src="scope.row.@field" class="thumbnail" /></a>
+                    }
+                    else if (fieldType == "file")
+                    {
+                        <a :href="scope.row.@field" target="_blank">{{scope.row.@field}}}</a>
+                    }
+                    else
+                    {
+                        <span>{{scope.row.@field}}</span>
+                    }
+                </template>
+            </el-table-column>
+        }
+        <el-table-column align="center" label="关联数据" width="180">
+            <template slot-scope="scope">
+                <el-button-group>
+                    <el-button size="small">{{scope.row.Count}}</el-button>
+                    <el-button size="small" v-on:click="dialog({title:scope.row.Name+'：关联数据',url:'@Url.ActionUrl("index","TagData")?tagid='+scope.row.Id+'&tableid='+scope.row.TableId,width:'90%',height:'90%',target:'self'})">管理</el-button>
+                </el-button-group>
+            </template>
+        </el-table-column>
+        <el-table-column align="center" width="250" label="操作">
+            <template slot-scope="scope">
+                <el-button-group>
+                    <el-button size="small" v-on:click="dialog({title:scope.row.Name+'：修改',url:'@Url.ActionUrl("Edit")?id='+scope.row.Id,width:'90%',height:'90%',target:'self'})">编辑</el-button>
+                    <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{id:scope.row.Id},confirmMsg:'确定删除吗？',success:function(){loadData()}})" class="btn btn-default">删除</el-button>
+                </el-button-group>
+            </template>
+        </el-table-column>
+    </el-table>
+    <ui-page-panel v-model="pageInfo" v-show="pageInfo.RecordCount>0" v-on:change="loadData"></ui-page-panel>
+</div>
+<script type="text/javascript">
+    var tableId = request("tableid");
+    if (tableId == "")
+    {
+        tableId ="@ViewBag.TableId";
+    }
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            searchInfo: { orderBy: "", searchField: "name", searchKeyword: "" },
+            pageInfo: { PageSize: 15, CurrentPage: 1, PageCount: 0, RecordCount: 0 },
+            selectList: [],
+            dataList: [],
+        },
+        methods: {
+            loadData: function () {
+                loadData();
+            },
+            handleSelectionChange: function (val) {
+                this.selectList = val;
+            }
+        }
+    });
+
+    //加载数据
+    function loadData() {
+        vue.ajax({
+            url: "@Url.ActionUrl("PageListData")?tableId=" + tableId,
+            data: extend(vue.searchInfo, vue.pageInfo),
+            success: function (responseData) {
+                if (responseData.hasOwnProperty("Data")) {
+                    vue.dataList = responseData.Data;
+                    vue.pageInfo = responseData.PageInfo;
+                }
+            }
+        });
+    }
+    loadData();
+
+</script>

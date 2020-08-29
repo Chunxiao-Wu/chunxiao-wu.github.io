@@ -1,0 +1,62 @@
+﻿
+@{
+    TipsInfo tipsInfo = ViewBag.TipsInfo;
+    Layout = "~/Areas/Member/Views/_LoginLayoutPage.cshtml";
+    ViewBag.Title = "创建用户";
+}
+<div class="container" id="reg">
+    <div class="loginBox" id="loginbox">
+        <div class="content-box">
+            <div class="media logo-media"></div>
+            <div class="login-sign">OAuth2.0</div>
+            <div id="LoginBox" v-if="Open==1">
+                <div class="form-group">
+                    <span id="lb_msg"></span>
+                    <span v-if="Open==1 && State==0" class="text-danger">{{Msg}}</span>
+                    <span v-if="Open==0">对不起，网站注册功能已关闭！</span>
+                </div>
+                <div class="form-group">
+                    <div class="text-left">
+                        <a href="@Url.ActionUrl("Index","Reg")" class="text-primary">注册会员</a> / <a href="@Url.ActionUrl("Index","Login")" class="text-primary">转到登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var formData = { Open: @ViewBag.Open, State: @tipsInfo.State, Msg: "@tipsInfo.Msg"};
+    //vue实例化
+    var vue = new Vue({
+        el: "#reg",
+        data: formData,
+        methods: {
+            login: function () {
+                this.$message.success("授权成功!")
+                var to = request("to");
+                if (to == ""){
+                    to = "@Url.ActionUrl("Index","Default")";
+                }
+                top.location.href = to;
+            },
+        },
+    });
+    if (formData.State == 1) {
+        vue.login();
+    }
+    function init() {
+        var $body = document.querySelector("body");
+        var winHeight = clientSize().height;
+        var $loginBox = document.querySelector("#loginbox");
+        var mHeight = $loginBox.offsetHeight;
+        var topMargin = parseInt(winHeight / 2) - parseInt(mHeight / 2) - 40;
+        if (topMargin <= 10) {
+            topMargin = 10;
+        }
+        $loginBox.style.marginTop = topMargin + "px";
+    }
+    document.ready(function () {
+        init()
+    });
+    window.onresize = init;
+</script>

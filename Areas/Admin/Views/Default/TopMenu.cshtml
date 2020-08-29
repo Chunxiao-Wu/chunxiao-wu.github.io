@@ -1,0 +1,72 @@
+﻿@using System.Linq;
+<div class="box" id="topContainer">
+    <div class="left topmenu" id="topmenu">
+        <ul>
+            <li class="item home-item" title="后台首页"><a href="@Url.ActionUrl("Home")" target="mainContainer"><i class="fa fa-home fa-fw"></i></a></li>
+            @{
+                CurrentUser currentUser = (CurrentUser)ViewData["CurrentUser"];
+                int SiteId = (int)ViewData["SiteId"];
+                IEnumerable<dynamic> menuList = (IEnumerable<dynamic>)ViewData["MenuList"];
+                menuList = menuList.Where(item => item.Level == 1).OrderBy(item => item.Xuhao);
+                int idx = 0;
+                string topMenuName = "我的菜单";
+                foreach (var item in menuList)
+                {
+                    if (idx == 0)
+                    {
+                        topMenuName = item.Name;
+                    }
+                    <li class="item menu-item" date-top-menu-id="@item.Id" onclick="setTopIndex(@idx,'@item.Name',this)"><span>@item.Name</span></li>
+                    idx++;
+                }
+            }
+        </ul>
+    </div>
+    <div class="right">
+        <el-menu class="el-menu-demo" mode="horizontal">
+            <el-menu-item index="1"><a href="/E/Preview/Site?id=@SiteId" target="_blank" title="网站首页"><span class="fa fa-globe"></span></a></el-menu-item>
+            <el-menu-item index="2"><a href="javascript:void(0)" v-on:click="restartApplication" title="重启进程" class="block"><span class="fa fa-refresh"></span></a></el-menu-item>
+            <el-submenu index="3" popper-class="el-submenu-demo">
+                <template slot="title">
+                    <span class="fa fa-user"> 账户中心</span>
+                </template>
+                <el-menu-item><a href="javascript:void(0)" v-on:click="dialog({title:'选择管理站点',url:'@Url.ActionUrl("SetCurrentSite","Site")',width:'800px', height:'80%'})">网站切换</a></el-menu-item>
+                <el-menu-item><a href="#" v-on:click="exit">退出登录</a></el-menu-item>
+                <el-menu-item><a href="javascript:void(0)" v-on:click="dialog({title:'会员中心中转窗口',url:'@Url.ActionUrl("GoMemberSet","Member")',width:'600px', height:'350px'})">会员中心</a></el-menu-item>
+                <el-menu-item><a href="http://bbs.pageadmin.net" target="_blank">交流论坛</a></el-menu-item>
+                <el-menu-item><a href="http://www.pageadmin.net" target="_blank">官方网站</a></el-menu-item>
+            </el-submenu>
+        </el-menu>
+    </div>
+</div>
+<script type="text/javascript">
+    var topMenuName = "@topMenuName";
+
+    var topVue = new Vue({
+        el: "#topContainer",
+        data: { },
+        methods: {
+            restartApplication: function () {
+                var url = "@Url.ActionUrl("RestartApplication")";
+                var loadingInstance = this.$loading();
+                var vue = this;
+                ajax({type: "post", async: true, url: url, success: function () {
+                    loadingInstance.close();
+                    vue.$message.success("重启成功！");
+                }});
+            },
+            exit: function () {
+                var loadingInstance = this.$loading();
+                var url = "@Url.ActionUrl("Exit","Login")";
+                var vue = this;
+                ajax({
+                    type: "get", async: true, url: url, success: function () {
+                        loadingInstance.close();
+                        vue.$message.success("正在退出！");
+                        location.href = "@Url.ActionUrl("Index","Login")";
+                    }
+                });
+            },
+        }
+    });
+</script>

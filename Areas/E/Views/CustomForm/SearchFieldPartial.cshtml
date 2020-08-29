@@ -1,0 +1,27 @@
+﻿@functions
+{
+    private string GetSearchField(IEnumerable<dynamic> dataList)
+    {
+        string rv = "";
+        IEnumerable<dynamic> rows = dataList.Where(c => c.SearchType != "");
+        string name, remark, searchType, valueType;
+        foreach (dynamic item in rows)
+        {
+            name = item.Name;
+            remark = item.Remark;
+            searchType = item.SearchType;
+            valueType = item.ValueType;
+            rv += "<option value=\"" + name + "\" valueType=\"" + valueType + "\" searchType=\"" + searchType + "\">" + remark + "</option>";
+        }
+        return rv;
+    }
+}
+@{
+    IEnumerable<dynamic> dataList = Model;
+    foreach (var item in dataList.Where(c => c.SearchType != ""))
+    {
+        <el-option value="@(item.Name)" label="@(item.Remark)"></el-option>
+    }
+}
+
+

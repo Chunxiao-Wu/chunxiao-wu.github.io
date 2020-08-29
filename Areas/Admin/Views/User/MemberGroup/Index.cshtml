@@ -1,0 +1,104 @@
+﻿@{
+    CurrentUser user = ViewBag.CurrentUser;
+    IEnumerable<dynamic> fieldData = Html.GetFieldList((string)ViewBag.Table, "list", user);
+}
+<div class="main" id="main">
+    <div class="breadcrumb-box" onclick="loadData()">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i>会员组管理</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+
+    <div class="menu-bar-box">
+        <table border=0 cellpadding=0 cellspacing=0 class="tb-head form-inline form-group-sm">
+            <tr>
+                <td>
+                    <el-tooltip class="item" effect="dark" content="添加用户组" placement="bottom-start">
+                        <el-button size="small" type="button" v-on:click="dialog({title:'添加用户组', url:'@Url.ActionUrl("Add")',width:'90%',height:'95%'})">添加</el-button>
+                    </el-tooltip>
+                    <el-button size="small" type="button" style="margin-left:0px;" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{Id:getSelectedPropertys(selectList,'Id')},confirmMsg:'确定删除吗？',success:'loadData()',beforeExecute:function(){return checkSelectedItems(selectList)},})">删除</el-button>
+                </td>
+            </tr>
+        </table>
+        <el-table ref="multipleTable" :data="dataList" row-key="Id" tooltip-effect="dark" border highlight-current-row style="width: 100%" v-on:selection-change="handleSelectionChange">
+            <el-table-column type="selection" width="40" align="center"> </el-table-column>
+            <el-table-column prop="Name" label="会员组" min-width="100"></el-table-column>
+            <el-table-column prop="Id" label="ID" align="center" width="90"></el-table-column>
+            <el-table-column prop="Remark" label="备注" align="center" :show-overflow-tooltip="true" min-width="150"></el-table-column>
+            <el-table-column label="开放注册" align="center" width="90">
+                <template slot-scope="scope">
+                    <span :class="'sp_state is-'+scope.row.CanReg"></span>
+                </template>
+            </el-table-column>
+            <el-table-column label="级别" align="center" width="180">
+                <template slot-scope="scope">
+                    <el-input v-model="scope.row.Rank" size="small" readonly style="width:120px">
+                        <template slot="prepend">
+                            <el-button v-on:click="updateXuhao({type:-1,sortField:'Rank',row:scope.row,url:'@Url.ActionUrl("UpdataListXuhao")',dataList:dataList})">↑</el-button>
+                        </template>
+                        <template slot="append">
+                            <el-button slot="append" v-on:click="updateXuhao({type:1,sortField:'Rank',row:scope.row,url:'@Url.ActionUrl("UpdataListXuhao")',dataList:dataList})">↓</el-button>
+                        </template>
+                    </el-input>
+                </template>
+            </el-table-column>
+            <el-table-column prop="Remark" label="菜单权限" align="center">
+                <template slot-scope="scope">
+                    <el-button v-on:click="dialog({title:scope.row.Name+'-菜单权限设置',url:'@Url.ActionUrl("Index","MemberGroupPermissions")?memberGroupId='+scope.row.Id,width:'90%',height:'95%'})" size="small">设置</el-button>
+                </template>
+            </el-table-column>
+            <el-table-column prop="Remark" label="投稿权限" align="center">
+                <template slot-scope="scope">
+                    <el-button v-on:click="dialog({title:scope.row.Name+'-投稿权限设置',url:'@Url.ActionUrl("Index","MemberGroupInfoPermissions")?memberGroupId='+scope.row.Id,width:'90%',height:'95%'})" size="small">设置</el-button>
+                </template>
+            </el-table-column>
+            <el-table-column prop="Remark" label="操作" align="center">
+                <template slot-scope="scope">
+                    <el-button-group>
+                        <el-button v-on:click="dialog({title:scope.row.Name+'-修改', url:'@Url.ActionUrl("Edit")?id='+scope.row.Id,width:'90%',height:'95%'})" size="small">修改</el-button>
+                        <el-button v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{id:scope.row.Id},confirmMsg:'确定删除吗？',success:'loadData()'})" :disabled="scope.row.IsDefault==1" size="small">删除</el-button>
+                    </el-button-group>
+                </template>
+            </el-table-column>
+        </el-table>
+    </div>
+</div>
+<script type="text/javascript">
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            selectList: [],
+            dataList:[],
+            pageInfo: { PageSize:15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+            queryData: { searchField: "remark", searchKeyword: "" },
+            options: [{ value: 'remark', label: '站点标识' }, { value: 'name', label: '站点名称' }, { value: 'domain', label: '绑定域名' }, { value: 'directory', label: '站点目录' }],
+        },
+        methods: {
+            loadData: function () {
+                loadData();
+            },
+            handleSelectionChange: function(val) {
+                this.selectList = val;
+            }
+        }
+    });
+
+        //加载数据
+    function loadData()
+    {
+        var serverData = extend(vue.pageInfo, vue.queryData);
+        vue.ajax({
+            url: "@Url.ActionUrl("PageListData")",
+            data: serverData,
+            success: function (responseData) {
+                if (responseData != "")
+                {
+                    vue.dataList = responseData.Data;
+                    vue.pageInfo = responseData.PageInfo;
+                }
+            }
+        });
+    }
+    loadData();
+</script>

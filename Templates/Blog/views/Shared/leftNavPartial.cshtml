@@ -1,0 +1,73 @@
+﻿@{
+    string templateDirectory = ViewBag.TemplateDirectory;
+    int idx = 0;
+}
+
+<div class="nav padding-bottom-30">
+    <div class="s-bar wow  animated fadeInDown">
+        <input type="text" id="s_kw" class="s-input" placeholder="请输入关键词" value="@Request.QueryString["kw"]"><input type="button" class="s-btn" onclick="search_kw()">
+        <script type="text/javascript">
+            function search_kw() {
+                var $skw = $("#s_kw")
+                var kw = $skw.val().Trim();
+                if (kw != "") {
+                    location.href = "/search/?kw=" + $("#s_kw").val();
+                }
+                else {
+                    $skw.focus();
+                }
+            }
+        </script>
+    </div>
+    <div class=" wow  animated fadeInDown">
+        <img src="@templateDirectory/images/ewm.png" />
+    </div>
+    <div class="m-columnlist margin-top-30 wow  animated fadeInUp">
+        <div class="column-tit">
+            热门文章
+        </div>
+
+        <ul class="mknc_zybk_box">
+            @foreach (dynamic item in Html.InfoDataList(new { ColumnId = 201, ShowNumber = 7, OrderBy = "thedate desc" }))
+            {
+                idx++;
+                string url = Html.InfoDataUrl((int)item.ColumnId, (int)item.Id);
+                string thumbnail = item.Thumbnail;
+                if (idx <= 3)
+                {
+                    <li class="clearFix">
+                        <span class="r float-left span-1">@idx</span>
+                        <a href="@url" target="_self" class="float-left" title="@item.Title">@item.Title</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="clearFix">
+                        <span class="r float-left">@idx</span>
+                        <a href="@url" target="_self" class="float-left" title="@item.Title">@item.Title</a>
+                    </li>
+                }
+
+
+            }
+        </ul>
+    </div>
+    <div class="m-columnlist margin-top-20 wow  animated fadeInUp">
+        <div class="column-tit">
+            最新文章
+        </div>
+        <ul>
+            @foreach (dynamic item in Html.InfoDataList(new { ColumnId = 201, ShowNumber = 7, OrderBy = "thedate desc" }))
+            {
+                string url = Html.InfoDataUrl((int)item.ColumnId, (int)item.Id);
+                <li class="clearFix">
+                    <a href="@url" target="_self" class="float-left" title="@item.Title">@item.Title</a>
+                </li>
+
+
+            }
+        </ul>
+    </div>
+</div>
+
+

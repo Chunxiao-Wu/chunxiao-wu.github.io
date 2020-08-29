@@ -1,0 +1,68 @@
+﻿<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item onclick="location.href=location.href"><i class="fa fa-home fa-fw"></i>模板安装</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <el-form ref="form" label-width="130px" label-position="left">
+        <el-form-item label="上传安装包" >
+            <ui-file-upload action="@Url.ActionUrl("Index","UploadApi")" v-model="Package" return-type="string" :limit="1" :max-size="102400" :file-list='[]' accept=".zip"
+                            :data="{savePath:'/upload/temp',fieldName:'Package',detailId:0,fileType:'file',deleteRepeat:1}"
+                            v-validate="{data:Package,dataType:'*',nullMsg:'请上传的模板安装包'}">
+  
+            </ui-file-upload>
+            <span class="help-block validate-tips-box">只能上传.zip格式的模板文件包,安装包名将作为模板目录</span>
+        </el-form-item>
+        <el-form-item label="覆盖同名目录">
+            <el-radio-group v-model="OverlayFile">
+                <el-radio :label="false">否</el-radio>
+                <el-radio :label="true">是</el-radio>
+            </el-radio-group>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+
+        <el-form-item label="" v-show="disabled==true">
+            <el-alert title="模板安装成功，请到站点设置中更新站点的模板目录。" type="success"  show-icon> </el-alert>
+        </el-form-item>
+
+        <el-form-item label="">
+            <el-button type="primary" size="small" v-on:click="postSubmit" :disabled="disabled">安装</el-button>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+    </el-form>
+
+    <div class="alert alert-warning alert-dismissible" role="alert">
+        <strong>说明：</strong>
+        <p>1、如果选择覆盖同名目录，则将覆盖同名的模板目录，否则出现同名模板将退出安装。</p>
+        <p>2、模板安装成功后，可以到站点管理中选择新的模板目录并配置好对应的栏目模板。</p>
+    </div>
+
+</div>
+<script type="text/javascript">
+    var formData = {Package: "", AppType: "template", Guid: "@Html.Guid()", OverlayFile: false, disabled: false };
+    var vue = new Vue({
+        el: "#main",
+        data: formData ,
+        methods: {
+            postSubmit: function () {
+                var _this = this;
+                var validated = _this.validateForm();
+                if (validated) {
+                    _this.ajax({
+                        type: "post", url: "@Url.ActionUrl()", data: formData, success: function (data) {
+                            _this.disabled = true;
+                            var state = data.State;
+                            var msg = data.Msg;
+                            if (state == 1) {
+                                _this.result = "success"
+                            }
+                            else {
+                                _this.result = msg;
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    });
+</script>

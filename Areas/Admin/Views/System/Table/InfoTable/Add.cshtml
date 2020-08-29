@@ -1,0 +1,119 @@
+﻿@model string
+<div class="main" id="main">
+    <el-form label-width="150px" class="small" label-position="left">
+        <el-form-item label="表名">
+            <el-input placeholder="请填写表名" type="text" maxlength="20" v-model="Name" :readonly="Id>0" v-validate="{data:Name,dataType:'table',nullMsg:'请填写表名！',errorMsg:'表名填写错误'}"></el-input>
+            <span class="help-block">只能由字母、数字组成，首字符必须英文</span>
+        </el-form-item>
+
+        <el-form-item label="备注">
+            <el-input placeholder="请填写备注" type="text" name="Remark" id="Remark" v-model="Remark" maxlength="50" class="form-control" v-validate="{data:Remark,dataType:'*',nullMsg:'请填写标识！'}"></el-input>
+            <span class="help-block">仅用于标识，如文章表，产品中心等用于备注识别</span>
+        </el-form-item>
+
+        <el-form-item label="应用站点">
+            <ui-select placeholder="选择应用站点" v-model="SiteId" :options="@Html.GetOptionsJson("pa_site","remark")" v-validate="{data:SiteId,dataType:'numeric',min:1,errorMsg:'请选择应用站点',nullMsg:'请选择应用站点！'}"></ui-select>
+            <span class="help-block">为保证检索速度和数据的独立性，一个信息表只能用于一个站点</span>
+        </el-form-item>
+
+        <el-form-item label="信息页默认模版">
+            <el-input type="text" placeholder="信息页模板文件" maxlength="100" v-model="TemplateDetail" class="form-control form-control-sm">
+                <template slot="append">
+                    <el-button type="button" class="btn btn-default ui-dialog" v-on:click="dialog({title:'选择信息页模板',url:'@Url.ActionUrl("Select","TemplateManager")?setData=parent.vue.TemplateDetail',width:'600px',height:'95%',target:'self'})">选择</el-button>
+                </template>
+            </el-input>
+            <span class="help-block">信息不属于任何栏目时的默认模板</span>
+        </el-form-item>
+
+        <el-form-item label="默认排序">
+            <el-input type="text" name="Orderby" id="Orderby" maxlength="50" value="id desc" v-model="Orderby" class="form-control"></el-input>
+            <span class="help-block">管理页默认排序方式,留空则默认id desc</span>
+        </el-form-item>
+
+        <el-form-item label="管理页显示数">
+            <el-input type="text" maxlength="3" value="20" v-model="Pagesize" class="form-control form-control-xs" v-validate="{data:Pagesize,dataType:'numeric',min:1,errorMsg:'请填写大于0的数值!'}"></el-input>
+            <span class="help-block">管理页默认显示的记录数，留空则默认20</span>
+        </el-form-item>
+
+        <el-form-item label="菜单启用">
+            <el-checkbox v-model="ShowMenu" :true-label="1" :false-label="0" :label="0">启用</el-checkbox>
+            <span class="help-block">启用后会自动添加到内容管理菜单中</span>
+        </el-form-item>
+
+        <el-form-item label="删除保护">
+            <el-checkbox v-model="DeleteProtect" :true-label="1" :false-label="0" :label="0">启用</el-checkbox>
+            <span class="help-block">启用后列表页不能直接删除</span>
+        </el-form-item>
+
+        <el-form-item label="前台投稿功能">
+            <el-checkbox v-model="GuestSubmit" :true-label="1" :false-label="0" :label="0">启用</el-checkbox>
+            <span class="help-block">启用后前台才能进行投稿</span>
+        </el-form-item>
+
+        <el-form-item label="投稿验证码" v-show="GuestSubmit==1">
+            <el-checkbox v-model="VerificationCode" :true-label="1" :false-label="0">启用</el-checkbox>
+            <span class="help-block">开启后，前台投稿会对验证码进行验证</span>
+        </el-form-item>
+
+        <el-form-item label="投稿默认状态" v-show="GuestSubmit==1">
+            <el-select placeholder="请选择默认状态" v-model="SubmitDefaultState" >
+               <el-option :value="1" label="已审核"></el-option>
+               <el-option :value="0" label="待审核"></el-option>
+               <el-option :value="-2" label="草稿"></el-option>
+                <el-option :value="-10" label="前端自定义State属性"></el-option>
+            </el-select>
+            <span class="help-block">前台提交后的默认信息状态，不选择默认为待审核状态</span>
+        </el-form-item>
+
+        <el-form-item label="序号">
+            <el-input placeholder="仅用于排序" type="text" value="1" maxlength="4" name="Xuhao" id="Xuhao" v-model="Xuhao" class="form-control form-control-xs ui-queryString" v-validate="{data:Xuhao,dataType:'numeric',min:0,errorMsg:'请填写大于0的数值!'}"></el-input>
+            <span class="help-block"></span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交保存</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    //绑定数据
+    var id = "@Request.QueryString["id"]";
+    var formData = @Html.RawModel(Model);
+    if (id == "")
+    {
+        formData.SiteId ="@ViewBag.CurrentSiteId";
+        formData.Pagesize = 20;
+        formData.Xuhao = 1;
+        formData.ShowMenu = 1;
+        formData.DeleteProtect= 1;
+    }
+    else
+    {
+        if (formData.SiteId == 0)
+        {
+            formData.SiteId = "";
+        }
+    }
+    var vue = new Vue({
+        el: "#main",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                var validated =this.validateForm({});//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, success: function () { callBack() } });
+                }
+            }
+        },
+    });
+    function callBack()
+    {
+        if (id == "")
+        {
+            location.href = location.href
+        }
+        parent.loadData()
+    }
+</script>

@@ -1,0 +1,69 @@
+﻿@model string
+<div class="main">
+    <form method="post" class=" form form-lg ui-validForm" action="@Url.ActionUrl()" data-source="@Model">
+        <div class="form-group">
+            <label class="control-label">方案名称</label>
+            <div class="controls">
+                <input name="Name" id="Name" type="text" maxlength="50" class="form-control form-control-sm" data-validate="dataType:'*',nullMsg:'请填写方案名称!',checkUrl:'@Url.Action("CheckExists",new {id=Request.QueryString["id"],fieldName = "方案名称",area="admin"})'">
+                <span class="help-block">仅用于标识</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">栏目页缓存分钟数</label>
+            <div class="controls form-inline">
+                <input name="ColumnCacheMinutes" id="ColumnCacheMinutes" value="0" type="text" maxlength="10" class="form-control form-control-sm" data-validate="dataType:'numeric',nullMsg:'请填写缓存时间!',errorMsg:'缓存时间只能填写数字!'">分钟
+                <span class="help-block">0表示不缓存</span>
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <label class="control-label">缓存最大列表页码</label>
+            <div class="controls">
+                <input name="CacheMaxPage" id="CacheMaxPage" value="1" type="text" maxlength="10" class="form-control form-control-sm" data-validate="dataType:'numeric',min:1,nullMsg:'请填写页码数!',errorMsg:'页码数只能填写大于等于1的数字!'">
+                <span class="help-block">只对有分页有效，超过最大页码数后将不再进行缓存。</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">信息内容页缓存分钟数</label>
+            <div class="controls form-inline">
+                <input name="DetailCacheMinutes" id="DetailCacheMinutes" value="0" type="text" maxlength="10" class="form-control form-control-sm" data-validate="dataType:'numeric',nullMsg:'请填写缓存时间!',errorMsg:'缓存时间只能填写数字!'"> 分钟
+                <span class="help-block">只对信息内容页有效，0表示不缓存，如果信息内容页多，不建议进行缓存</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">不缓存的url参数</label>
+            <div class="controls">
+                <input name="NocacheUrlParams" id="NocacheUrlParams" value="" type="text" maxlength="100" class="form-control form-control-sm">
+                <span class="help-block">多个参数用半角逗号隔开，url参数中包含设置的参数，则不进行缓存</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">不缓存的url关键词</label>
+            <div class="controls">
+                <input name="NocacheUrlKeywords" id="NocacheUrlKeywords" value="" type="text" maxlength="100" class="form-control form-control-sm">
+                <span class="help-block">多个关键词用半角逗号隔开，如果url中包含设置的关键词，则不进行缓存</span>
+            </div>
+        </div>
+
+        <div class="submit-footerbar">
+            <label class="control-label"></label>
+            <div class="controls">
+                <input type="hidden" id="Id" name="Id" />
+                <button type="button" class="btn btn-sm btn-primary ui-pagePost" data-custom-params="url:'@Url.ActionUrl()',callBack:'PostRefreshBack'">提交</button>
+                <button type="button" class="btn btn-sm btn-default ui-closeDialog">关闭</button>
+            </div>
+</div>
+    </form>
+</div>
+<script type="text/javascript">
+    //绑定数据
+    var id = Request("id");
+    if (id != "") {
+        $("form").FormBind({ dataSourceFrom: "attr" })
+    }
+</script>

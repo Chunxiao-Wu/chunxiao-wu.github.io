@@ -1,0 +1,9 @@
+﻿<div>
+    <ul class="breadcrumb">
+        <li><a href="@Html.SiteUrl()"><span class="fa fa-home"> 首页</span></a></li>
+        @foreach (var item in Html.ColumnBreadcrumb())
+        {
+            <li><a href="@item.Url">> @item.Name</a></li>
+        }
+    </ul>
+</div>

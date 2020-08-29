@@ -1,0 +1,127 @@
+﻿
+@functions{
+
+    IEnumerable<dynamic> _MenuDt;
+    IEnumerable<dynamic> _CanAdminTable;
+    int topIndex = 0;
+    string ShowLeftMenu(IEnumerable<dynamic> menuDt, IEnumerable<dynamic> canAdminTable)
+    {
+        _MenuDt = menuDt;
+        _CanAdminTable = canAdminTable;
+        string rv = "";
+        IEnumerable<dynamic> levelDataList = menuDt.Where(item => item.Level == 1);
+        foreach (var row in levelDataList)
+        {
+            rv += "<div v-show=\"topIndex=="+topIndex+"\">\r\n" + ChildMenu(menuDt, row.Id) + "\r\n</div>";
+            topIndex++;
+        }
+        return rv;
+    }
+
+    string ChildMenu(IEnumerable<dynamic> menuDt, int parentId)
+    {
+        string rv = "<ul>";
+        IEnumerable<dynamic> dataList = menuDt.Where(item => item.ParentId == parentId);
+        foreach (var item in dataList)
+        {
+            string isExpand = item.IsExpand.ToString();
+            int id =item.Id;
+            string area = item.Area.ToString();
+            int level = item.Level;
+            string target = item.Target;
+            string pluginName= item.PluginName;
+            byte isFinal = item.IsFinal;
+            string url="";
+            int viewType= item.ViewType;
+            if (isFinal == 1)
+            {
+                if(viewType==1)
+                {
+                    url = item.ZdyUrl;
+                }
+                else if (!string.IsNullOrEmpty(pluginName))
+                {
+                    url = Url.RouteUrl("Plugin",new {action= item.Action.ToString(), controller=item.Controller.ToString(),pluginName= pluginName});
+                }
+                else
+                {
+                    url = Url.Action(item.Action.ToString(), item.Controller.ToString(), new {area = area });
+                }
+            }
+            string className = "";
+            string nodeType = item.SysNode;
+            string arrow = "";
+            if (isFinal == 0)
+            {
+                arrow = "<span class=\"fa fa-fw fa-angle-right arrow-icon\"></span>";
+            }
+            if (isExpand == "0")
+            {
+                className = "shut";
+            }
+            string icon="";
+            if (isFinal ==0)
+            {
+                icon = item.Icon;
+                if (!string.IsNullOrEmpty(icon))
+                {
+                    icon = "<i class=\"fa-fw fa " + icon + "\"></i>";
+                }
+            }
+
+            rv += "\r\n<li  class=\"" + className + "\">\r\n";
+            if (isFinal == 0)
+            {
+                string childNode="";
+                if (nodeType == "infoData")
+                {
+                    childNode=InfoTableMenu();
+                }
+                else
+                {
+                    childNode = ChildMenu(menuDt, id);
+                }
+
+                if (childNode != "<ul></ul>" && childNode!=null)
+                {
+                    rv += "<a href =\"" + url + "\" :class=\"currentStyle('" + item.Id + "')\" v-on:click=\"open(" + isFinal + ",'" + url + "','" + target + "','" + item.Id + "',$event)\">" + icon + "<span>" + item.Name + "</span>" + arrow + "</a>";
+                    rv += childNode;
+                }
+            }
+            else
+            {
+                rv += "<a href =\"" + url + "\" :class=\"currentStyle('" + item.Id + "')\" v-on:click=\"open(" + isFinal + ",'" + url + "','" + target + "','" + item.Id + "',$event)\">" + icon + "<span>" + item.Name + "</span>" + arrow + "</a>";
+            }
+            rv += "\r\n</li>";
+        }
+        rv += "</ul>";
+        return rv;
+    }
+
+    string InfoTableMenu()
+    {
+        if (_CanAdminTable == null)
+        {
+            return "";
+        }
+        string target = "_self";
+        string rv = "<ul>";
+        foreach (var item in _CanAdminTable)
+        {
+            string url = Url.Action("Index", "InfoData", new { table = item.Name ,area="admin"});
+            rv += "\r\n<li>\r\n<a href=\"" + url + "\"  :class=\"currentStyle('infoTable" + item.Id + "')\" v-on:click=\"open(1,'" + url + "','"+ target+"','infoTable" + item.Id + "',$event)\"><span>" + item.Remark + "</span></a>";
+            rv += "\r\n</li>";
+        }
+        rv += "</ul>";
+        return rv;
+    }
+}
+
+<div class="leftmenu" id="leftmenu">
+    @{
+        //string adminPath = "/" + this.ViewContext.RouteData.Values["adminPath"].ToString();//当前站点path
+        IEnumerable<dynamic> menuList = (IEnumerable<dynamic>)ViewData["MenuList"];
+        IEnumerable<dynamic> canAdminTableList = (IEnumerable<dynamic>)ViewData["CanAdminTableList"];
+        <Text>@Html.Raw(ShowLeftMenu(menuList, canAdminTableList))</Text>
+    }
+</div>

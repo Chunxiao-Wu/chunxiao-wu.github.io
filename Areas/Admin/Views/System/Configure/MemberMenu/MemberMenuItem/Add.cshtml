@@ -1,0 +1,63 @@
+﻿@{ 
+    int menuId = StringHelper.Format<int>(Request.QueryString["menuId"]);
+}
+<div class="main" id="main">
+    <el-form ref="form" label-width="150px" label-position="left">
+        <el-form-item label="名称">
+            <el-input v-model="Name" maxlength="50" v-validate="{data:Name,dataType:'*',nullMsg:'请填写名称!'}"></el-input>
+            <span class="help-block validate-tips-box">菜单项目名称，仅用于识别</span>
+        </el-form-item>
+        <el-form-item label="命名空间">
+            <el-input v-model="Namespace" maxlength="100" v-validate="{data:Namespace,dataType:'*',nullMsg:'请填写命名空间!'}"></el-input>
+            <span class="help-block validate-tips-box">控制器所在的命名空间</span>
+        </el-form-item>
+        <el-form-item label="控制器">
+            <el-input v-model="Controller" maxlength="50" v-validate="{data:Controller,dataType:'string',nullMsg:'请填写控制器名称！',errorMsg:'控制器名称填写错误!'}"></el-input>
+            <span class="help-block validate-tips-box">控制器名称,其中Controller后缀不需要填写</span>
+        </el-form-item>
+        <el-form-item label="方法">
+            <el-input v-model="Action" maxlength="50" v-validate="{data:Action,dataType:'string',nullMsg:'请填写方法名称！',errorMsg:'方法名称填写错误!'}"></el-input>
+            <span class="help-block validate-tips-box">方法名称，如Index、Add</span>
+        </el-form-item>
+        <el-form-item label="请求类型">
+            <el-radio-group v-model="Method">
+                <el-radio label="GET">GET</el-radio>
+                <el-radio label="POST">POST</el-radio>
+            </el-radio-group>
+            <span class="help-block validate-tips-box">用于对http请求类型进行精确的权限控制</span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    //绑定数据
+    var id = request("id");
+    var formData =@Html.Raw(Model ?? "{}");
+    if (id == "")
+    {
+        formData.IsDefault =0;
+        formData.MenuId = @menuId;
+        formData.Method = "GET";
+    }
+    var vue = new Vue({
+        el: "#main",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({tipsStyle: 1 });//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, success: "PostBack()" });
+                }
+            }
+        },
+    });
+    function PostBack() {
+        if (id == "") {
+            location.href = location.href;
+        }
+        parent.loadData();
+    }
+</script>

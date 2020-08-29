@@ -1,0 +1,51 @@
+﻿<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i><a href="javascript:void(0)" onclick="location.href=location.href">登录日志</a></el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="table-list-box">
+        <template>
+            <el-table ref="multipleTable" :data="dataList" tooltip-effect="dark" style="width: 100%" border>
+                <el-table-column label="登录时间" prop="Thedate" width="300" align="center"></el-table-column>
+                <el-table-column label="登录Ip" prop="Ip" align="center"></el-table-column>
+                <el-table-column label="登录入口" prop="Url" align="center"></el-table-column>
+            </el-table>
+        </template>
+    </div>
+    <ui-page-panel v-model="pageInfo" v-show="pageInfo.RecordCount>0" v-on:change="loadData()"></ui-page-panel>
+</div>
+
+<script type="text/javascript">
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            dataList: [],
+            pageInfo: { PageSize: 15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+        },
+        methods: {
+            loadData: function () {
+                loadData();
+            },
+        }
+    });
+
+    //加载数据
+    function loadData()
+    {
+        ajax({
+            url: "@Url.ActionUrl("LoginLogList")",
+            data: vue.pageInfo,
+            success: function (responseData) {
+                vue.dataList = responseData.Data;
+                vue.pageInfo = responseData.PageInfo;
+            }
+        });
+    }
+    loadData();
+</script>
+
+
+
+

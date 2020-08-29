@@ -1,0 +1,17 @@
+﻿@{
+    Layout = "_Layout.cshtml";
+}
+<div class="success-box">
+    <font>恭喜您，网站已经安装成功！<br />请点击下面的按钮进入网站后台进行网站管理！</font>
+</div>
+<div class="btn-box">
+    <button class="el-button el-button--primary" onclick="enter()">进入管理后台</button>
+</div>
+<script type="text/javascript">
+    document.getElementById("progressBar").style.width = "980px";
+     function enter()
+    {
+        location.href="/@ViewBag.AdminUrl"
+    }
+</script>
+

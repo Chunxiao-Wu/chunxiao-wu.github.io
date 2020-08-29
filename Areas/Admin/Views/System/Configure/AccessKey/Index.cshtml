@@ -1,0 +1,87 @@
+﻿<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i><a href="javascript:void(0)" onclick="location.href=location.href">AccessKey管理</a></el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <table border=0 cellpadding=0 cellspacing=0 class="tb-head">
+        <tr>
+            <td>
+                    <el-button size="small" v-on:click="dialog({title:'添加',url:'@Url.ActionUrl("Add")',width:'95%',height:'95%',target:'self'})">
+                        添加
+                    </el-button>
+                    <el-button style="margin-left:0px;" size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{Id:getSelectedPropertys(selectList,'Id')},confirmMsg:'确定删除吗？',success:'loadData()',beforeExecute:function(){return checkSelectedItems(selectList)},})">
+                        删除
+                    </el-button>
+            </td>
+            <td align="right">
+                    <template>
+                        <el-select v-model="searchData.searchField" size="small" placeholder="请选择">
+                            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                        <el-input style="width:225px;" size="small" v-model="searchData.searchKeyword" placeholder="请输入内容"></el-input>
+                        <el-button size="small" v-on:click="loadData()">搜索</el-button>
+                    </template>
+ 
+            </td>
+        </tr>
+    </table>
+    <div class="table-list-box">
+        <template>
+            <el-table ref="multipleTable" :data="dataList" tooltip-effect="dark" highlight-current-row style="width: 100%" v-on:selection-change="handleSelectionChange" border>
+                <el-table-column type="selection" width="40"> </el-table-column>
+                <el-table-column label="id" prop="Id" width="100" align="center"></el-table-column>
+                <el-table-column label="AccessKeyId" prop="AccessKeyId" align="center"></el-table-column>
+                <el-table-column label="AccessKeySecret" prop="AccessKeySecret" align="center"></el-table-column>
+                <el-table-column label="备注" prop="Remark" align="center"></el-table-column>
+                <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                        <div class="el-button-group">
+                            <el-button size="small" v-on:click="dialog({title:scope.row.Remark+'：编辑',url:'@Url.ActionUrl("Edit")?id='+scope.row.Id,width:'90%',height:'90%',target:'self'})">修改</el-button>
+                            <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{id:scope.row.Id},confirmMsg:'确定删除吗？',success:'loadData()'})">删除</el-button>
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </template>
+    </div>
+    <ui-page-panel v-model="pageInfo" v-if="pageInfo.RecordCount>0" v-on:change="loadData()"></ui-page-panel>
+</div>
+
+<script type="text/javascript">
+
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            selectList: [],
+            searchData: { searchField:"accessKeyId",searchKeyword:""},
+            pageInfo: { PageSize:15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+            dataList: [],
+            options: [{ value: 'accessKeyId', label: 'AccessKeyId' }, { value: 'accessKeySecret', label: 'accessKeySecret' }, { value: 'remark', label: '备注' }, { value: 'authorizations', label: '权限' }],
+        },
+        methods: {
+            loadData: function () {
+                loadData();
+            },
+            handleSelectionChange: function(val) {
+                this.selectList = val;
+            }
+        }
+    });
+
+        //加载数据
+    function loadData()
+    {
+        var serverData = extend(vue.pageInfo,vue.searchData);
+        vue.ajax({
+            url: "@Url.ActionUrl("PageListData")",
+            data: serverData,
+            success: function (responseData) {
+                vue.dataList = responseData.Data;
+                vue.pageInfo = responseData.PageInfo;
+            }
+        });
+    }
+    loadData();
+</script>

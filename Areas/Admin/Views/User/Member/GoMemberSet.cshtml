@@ -1,0 +1,58 @@
+﻿@{ 
+    CurrentUser user = (CurrentUser)ViewBag.CurrentUser;
+}
+<style>
+    .alert-info {background-color: #d9edf7;border-color: #bce8f1;color: #31708f;line-height: 30px;}
+    .alert-dismissable, .alert-dismissible {padding-right: 35px;}
+    .alert {padding: 15px;padding-right: 15px;margin-bottom: 20px;border: 1px solid transparent;border-radius: 4px;}
+</style>
+<div class="main" id="main">
+    <div class="alert alert-info alert-dismissible">
+        在输入框中输入用户名，点击按钮后进入会员中心！
+    </div>
+    <el-form ref="form" label-position="top" data-source="@Model">
+        <el-form-item label="请填写用户*">
+            <el-input v-model="Username" v-validate="{data:Username,dataType:'*',nullMsg:'请填写用户名!'}" maxlength="50">
+                <el-button slot="append" type="primary" v-on:click="postSubmit">进入会员中心</el-button>
+            </el-input>
+            <a id="tiaoz" target="_blank" :href="'@Url.ActionUrl("GoMember")?uid='+Uid"></a>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+    </el-form>
+</div>
+<script type="text/javascript">
+    var formData = { Username: "@user.UserName", Uid: 0 };
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                var _this = this;
+                var validated = this.validateForm({});//jquery表单验证
+                if (validated) {
+                    vue.ajax({
+                        url: "@Url.ActionUrl("GetUid")",
+                        data: formData,
+                        success: function (data) {
+                            var data = jsonParse(data);
+                            var uid = data.Uid;
+                            if (uid == 0){
+                                _this.$notify.error({
+                                    title: '错误',
+                                    message: '用户名不存在！'
+                                });
+                            } else {
+                                _this.Uid = uid;
+                                _this.$nextTick(function () {
+                                    document.querySelector("#tiaoz").click();
+                                    //closeSelf();
+                                })
+                            }
+                        }
+                    });
+                }
+            }
+        },
+    });
+</script>

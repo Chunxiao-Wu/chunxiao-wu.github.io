@@ -1,0 +1,32 @@
+﻿@{
+    var siteDate = Html.SiteData();
+    int topColumnId = Html.TopColumnId();
+    string logo=siteDate.Logo;
+}
+<div class="header">
+    <span class="nav-toggle myhidden-lg" id="mainNavToggle"><i class="fa fa-bars"></i></span>
+    <div class="container clearfix">
+        <div class="float-lg-left margin-right-100">
+            <a class="logo" href="@Html.SiteUrl()">
+                @Html.LoadImg(logo, "alt=\"PageAdmin博客系统\"")
+            </a>
+        </div>
+        <div class="float-lg-left">
+            <div class="main-nav text-right clearfix col-md-right" id="mainNav">
+                @Html.SiteColumnsHtml()
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $("#mainNav").NavDropDown({triggerEvent: "mouseenter", columnId:@Html.CurrentColumnId(), navToggle: "#mainNavToggle" });
+     $nav = $(".main-nav");
+    $nav_li = $nav.find("li");
+    $nav.find("li[data-id='@topColumnId']").addClass("active");
+    $nav_li.stop().on("mouseenter", function () {
+        $(this).addClass("active").siblings("li").removeClass("active");
+    })
+    $nav_li.stop().on("mouseleave", function () {
+        $nav.find("li[data-id='@topColumnId']").addClass("active").siblings("li").removeClass("active");
+    })
+</script>

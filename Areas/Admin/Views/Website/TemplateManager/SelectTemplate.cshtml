@@ -1,0 +1,61 @@
+﻿
+<div class="main no-border no-padding" id="main">
+    <table border=0 cellpadding=0 cellspacing=0 class="table table-bordered" id="tb_list">
+        <thead>
+            <tr>
+                <td align="left">选择模板目录</td>
+            </tr>
+        </thead>
+        <tr class="item list-template-item" v-for="(item,index) in dataList">
+            <td align=left><el-radio :label="item.Name" v-model="name" v-on:change="set">{{item.Name}}</el-radio>
+        </tr>
+    </table>
+    <div class="tishi"><i class="fa fa-exclamation-circle"></i> 模板放在/Templates目录下，每个文件夹表示一个模板!</div>
+
+    <el-form label-width="20px">
+        <el-form-item class="footer-submit-bar">
+            <button type="button" class="el-button el-button--primary" onclick="closeSelf()">关闭</button>
+        </el-form-item>
+    </el-form>
+</div>
+
+<script type="text/javascript">
+    var setData ="@Request.QueryString["setData"]";
+    var loadUrl = "@Url.ActionUrl("TemplatesDirectoryList")";
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            name:eval(setData),
+            dataList:[]
+        },
+        methods:{
+              set:function()
+              {
+                  var templatesDirectory = this.name;
+                  eval(setData + "=templatesDirectory");
+                  closeSelf();
+              }
+        }
+        });
+
+    //加载数据
+    function loadData()
+    {
+        vue.ajax({
+        url: loadUrl,
+        data: {},
+        success: function (data) {
+            if (Array.isArray(data)) {
+                vue.dataList = data;
+            }
+            }
+        });
+    }
+
+    loadData();
+
+</script>
+
+
+

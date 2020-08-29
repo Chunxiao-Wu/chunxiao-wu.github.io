@@ -1,0 +1,218 @@
+﻿@using PageAdmin.Common;
+@using PageAdmin.Utils;
+@{
+    var installEnabled = ViewBag.InstallEnabled;
+    System.Diagnostics.Process currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+    string lastTime = null, lastIp = null, logins = null;
+    dynamic userData = ViewBag.CurrentUserData;
+    if (userData != null)
+    {
+        lastTime = userData.LastDate.ToString("yyyy-MM-dd HH:mm:ss");
+        lastIp = userData.LastIp.ToString();
+        logins = userData.Logins.ToString();
+    }
+    CurrentUser user = (CurrentUser)ViewBag.CurrentUser;
+    int bindEmailState = (int)ViewBag.EmailBindState;
+    int bindMobileState = (int)ViewBag.MobileBindState;
+    string securityLevel = "低";
+    if (bindEmailState == 1 && bindMobileState == 1)
+    {
+        securityLevel = "高";
+    }
+    else if (bindEmailState == 1 || bindMobileState == 1)
+    {
+        securityLevel = "中";
+    }
+}
+<link rel="stylesheet" href="~/Areas/Admin/Css/Home.css" type="text/css">
+<style>
+    .alert {padding:15px 15px;margin-bottom: 20px;border: 1px solid transparent;border-top-color: transparent;border-right-color: transparent;
+            border-bottom-color: transparent;border-left-color: transparent;border-radius: 4px;}
+    .alert-warning {background-color: #fcf8e3;border-color: #faebcc;color: #8a6d3b;}
+    .alert-dismissable, .alert-dismissible {padding-right: 35px;}
+    .alert-dismissable .close, .alert-dismissible .close {position: relative;top: -2px;right: -21px;color: inherit;}
+    .close {float: right;font-size: 21px;font-weight: bold;line-height: 1;color: #000;text-shadow: 0 1px 0 #fff;opacity: .2;cursor:pointer;}
+    .table{margin:0px 0px}
+    .table td{padding:5px !important}
+    .table tbody tr:hover > td {background-color:white;}
+    a .text-primary,a:hover .text-primary,.text-primary {color: #2888e2;}
+</style>
+<div class="main clearfix" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item onclick="location.href=location.href"><i class="fa fa-home fa-fw"></i>后台首页</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="alert alert-warning alert-dismissible" role="alert" v-if="boxAuthorize==false">
+        <a class="close" v-on:click="boxAuthorize=true">×</a>
+        授权提示：当前的站点域名还未经过PageAdmin官方商业授权许可！
+    </div>
+    @if (installEnabled == "true")
+    {
+        <div class="alert alert-warning alert-dismissible" role="alert" id="boxInstallEnabled">
+            <a data-dismiss="alert" class="close">×</a>
+            安全提示：请到系统设置>>安全设置中把安装状态设为禁止安装，<a href="@Url.ActionUrl("index","SysSet")">点击设置！</a>
+        </div>
+    }
+    <div class="account-info clearfix">
+        <div class="account-left"><i class="fa fa-user-circle"></i></div>
+        <div class="account-body">
+            <h4>
+                欢迎您，@(user.UserName)
+                <small>&nbsp;&nbsp;&nbsp;&nbsp;管理角色：@ViewBag.RoleName </small>
+                <small>&nbsp;&nbsp;&nbsp;&nbsp;用户组：@ViewBag.MemberGroupName </small>
+                @if (!string.IsNullOrEmpty(ViewBag.DepartmentName))
+                {<small>&nbsp; &nbsp; &nbsp; 部门：@ViewBag.DepartmentName </small>}
+            </h4>
+            <p>
+                这是您第 @logins 次登录，上次登录日期：@lastTime，登录Ip:@lastIp
+            </p>
+            <p class="security">
+                <i class="fa fa-shield fa-lg"></i><span>安全等级：@securityLevel</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <i class="fa fa-envelope fa-lg @(bindEmailState==1?"":"no-bind")"></i><span>@(bindEmailState == 1 ? "已绑定" : "未绑定")</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <i class="fa fa-mobile-phone fa-lg fa-2 @(bindMobileState==1?"":"no-bind")"></i><span>@(bindMobileState == 1 ? "已绑定" : "未绑定")</span>
+            </p>
+
+        </div>
+    </div>
+
+    <div class="panel notice-box">
+        <div class="panel-heading clearfix">
+            <span class="left">站内公告</span>
+        </div>
+        <div class="panel-body">
+            <ul id="noticeList" class="title-list">
+                <li class="item clearfix" v-for="item in dataList">
+                    <a class="title" :href="item.Url" target="_blank"><i class="fa fa-angle-right" aria-hidden="true"></i> {{item.Title}} <span class="date">/ {{item.Thedate}}</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="panel sys-info">
+        <div class="panel-heading">相关信息</div>
+        <div class="panel-body">
+            <table class="table">
+                <tr>
+                    <td width="150px">版本号：</td>
+                    <td>
+                        @(ViewBag.CurrentVersion)
+                    </td>
+                </tr>
+                <tr>
+                    <td>版本检测：</td>
+                    <td>
+                        <span v-html="cmsInfo.latestVersion"></span>
+                    </td>
+                </tr>
+                <tr v-if="cmsInfo.authorize">
+                    <td>授权许可：</td>
+                    <td>
+                        <span><i class="fa fa-id-card" aria-hidden="true"></i>已授权</span>
+                    </td>
+                </tr>
+                <tr v-if="cmsInfo.serviceExpire">
+                    <td>售后服务：</td>
+                    <td>
+                        <span id="spServiceExpire">已到期</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>运行环境：</td>
+                    <td>@Request.ServerVariables["SERVER_SOFTWARE"]   .Net @System.Environment.Version.ToString()</td>
+                </tr>
+                <tr>
+                    <td>客户端/服务器Ip：</td>
+                    <td>@CommerHelper.ClientIP()/@Request.ServerVariables["LOCAL_ADDR"]</td>
+                </tr>
+                <tr>
+                    <td>当前进程占用内存：</td>
+                    <td>@((((double)currentProcess.WorkingSet64) / 1024 / 1024).ToString("f2"))MB</td>
+                </tr>
+
+                <tr>
+                    <td>当前进程总线程数：</td>
+                    <td>@currentProcess.Threads.Count</td>
+                </tr>
+                <tr>
+                    <td>当前域名：</td>
+                    <td>@Request.ServerVariables["SERVER_NAME"]:@Request.ServerVariables["SERVER_PORT"]</td>
+                </tr>
+                <tr>
+                    <td>服务器目录：</td>
+                    <td>@Server.MapPath("/")</td>
+                </tr>
+                <tr>
+                    <td>官方网站：</td>
+                    <td><a href="http://www.pageadmin.net/" target="_blank">http://www.pageadmin.net/</a></td>
+                </tr>
+                <tr>
+                    <td>帮助中心：</td>
+                    <td><a href="http://www.pageadmin.net/help/" target="_blank">http://www.pageadmin.net/help/</a></td>
+                </tr>
+                <tr>
+                    <td>使用交流：</td>
+                    <td><a href="http://bbs.pageadmin.net/" target="_blank">http://bbs.pageadmin.net/</a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+</div>
+<script type="text/javascript">
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            dataList: [],
+            cmsInfo: { latestVersion: "<i class=\"fa fa-spinner fa-spin\"></i>正在检查更新", authorize: false, serviceExpire: false },
+            boxAuthorize: false,
+        },
+        methods: {
+        }
+    });
+    function loadData() {
+        vue.ajax({
+            url: "@Url.ActionUrl("GetWebNotice")",
+            data: { number: 6},
+            success: function (data) {
+                vue.dataList = data
+            }
+        });
+        vue.ajax({
+            url: "@Url.ActionUrl("CmsInfo")",
+            success: function (result) {
+                if (result == undefined || result == "") {
+                    return;
+                }
+                var latestVersion = result.LatestVersion;
+                var authorize = result.Authorize;
+                var serviceExpire = result.ServiceExpire;
+                switch (latestVersion)
+                {
+                    case 0:
+                        vue.cmsInfo.latestVersion = "<a href=\"@Url.ActionUrl("index", "OnlineUpgrade")\"><i class=\"fa fa-lightbulb-o text-primary\"></i><span class=\"text-primary\">有新的版本，点击立即更新！</span></a>";
+                        break;
+                    case 1:
+                        vue.cmsInfo.latestVersion = "当前已是最新版本";
+                        break;
+                    default:
+                        vue.cmsInfo.latestVersion = "error!";
+                            $checkUpgrade.html("")
+                        break;
+                }
+                switch (authorize) {
+                    case 1:
+                        vue.boxAuthorize = true;
+                        vue.cmsInfo.authorize = true;
+                        if (serviceExpire == 1) {
+                            vue.cmsInfo.serviceExpire = true;
+                        }
+                        break;
+                }
+            }
+        });
+    }
+    loadData();
+</script>

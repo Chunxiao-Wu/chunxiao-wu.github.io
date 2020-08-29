@@ -1,0 +1,39 @@
+﻿@{
+    int currentPage = 1;
+    string[] customRouteParameter = Html.PagePath().Split('/');
+
+    if (StringHelper.IsInt(customRouteParameter[1]))
+    {
+        currentPage = int.Parse(customRouteParameter[1]);
+    }
+    PageInfo pageInfo = new PageInfo()
+    {
+        PageSize = 8,//每页显示8条数据
+        CurrentPage = currentPage //当前页码，系统预设
+    };
+    string kw = Request.QueryString["kw"];
+    var dataList = Html.InfoDataList(new { Table = "article", OrderBy = "id desc" }, "[title] like @kw", new { kw = "%" + kw + "%" }, pageInfo);
+    int count = dataList.Count();
+}
+<div class="container mycontainer padding-top-20 clearFix">
+    <div class="rightmain-box float-left padding-right-30">
+        <div>
+            <ul class="breadcrumb">
+                <li><a href="/"><span class="fa fa-home"> 首页</span></a></li>
+                <li><a>&gt; 搜索</a></li>
+            </ul>
+        </div>
+        @if (count > 0)
+        {
+            @Html.Partial("ArticleListModel", dataList)
+            @Html.Partial("zdyPagebreakPartial", pageInfo)
+        }
+        else
+        {
+            <div class="text-gray padding-top-20">暂时没有搜索到和关键词 <span class="text-yellow">@(kw)</span> 匹配的文章！</div>
+        }
+    </div>
+    <div class="leftnav-box float-left">
+        @Html.Partial("leftNavPartial")
+    </div>
+</div>

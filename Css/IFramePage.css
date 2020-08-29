@@ -1,0 +1,95 @@
+﻿
+._frame_layout{
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+._frame_layout_left_area {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 190px;
+    height: 100%;
+    background-color: #EAEDF1;
+}
+._frame_layout_middel_btn {
+    position: absolute;
+    width: 15px;
+    top:350px;
+    left: 175px;
+    z-index: 2;
+    padding: 10px 0px;
+    background-color: #fff;
+    border-radius: 10px 0px 0px 10px;
+    border: 0;
+    cursor: pointer
+}
+._frame_layout_middel_btn .fa {
+        font-size: 15px;
+    }
+    ._frame_layout ._frame_layout_middel_btn_shut {
+        background-color: #EAEDF1;
+        border-radius: 0px 10px 10px 0px;
+        left: 0px
+    }
+    ._frame_layout ._frame_layout_middel_btn_shut .fa {
+        transform: rotate(180deg);
+    }
+
+._frame_layout_right_area {
+    padding:10px 10px 10px 190px;
+    overflow-y:scroll;
+}
+
+._frame_layout_right_area_full{
+    padding-left: 0px
+}
+
+
+/*菜单样式*/
+._frame_layout_menu {}
+
+    ._frame_layout_menu label {
+        height: 50px;
+        line-height: 50px;
+        background: #D9DEE4;
+        padding-left: 15px;
+        display: block;
+        margin:0px;
+    }
+
+    ._frame_layout_menu div ._frame_layout_menu_sort {
+        height: 35px;
+        line-height: 35px;
+        padding-left: 30px;
+        display: block;
+        position: relative;
+        cursor: pointer;
+    }
+
+    ._frame_layout_menu div ._frame_layout_menu_sort .fa {
+        font-size: 14px;
+    }
+    ._frame_layout_menu div ._frame_layout_menu_sort b.caret {
+        position: absolute;
+        left: 15px;
+        top: 15px;
+        border-width: 5px;
+        transform: rotate(-90deg);
+    }
+
+    ._frame_layout_menu div ._frame_layout_menu_sort_shut b.caret {
+        transform: rotate(0deg);
+    }
+
+    ._frame_layout_menu div ul li {
+        padding-left: 30px;
+    }
+._frame_layout_menu div ul li:hover, ._frame_layout_menu div ._frame_layout_menu_sort:hover, ._frame_layout_menu div ul li._menu_current {
+    background-color: #fff
+}
+._frame_layout_menu div ul li a {
+    height: 35px;
+    line-height: 35px;
+    display: block;
+}

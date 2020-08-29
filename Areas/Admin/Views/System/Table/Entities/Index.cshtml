@@ -1,0 +1,99 @@
+﻿<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i>系统表管理</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="menu-bar-box">
+        <table border=0 cellpadding=0 cellspacing=0>
+            <tr>
+                <td align="left">
+                    <el-tooltip class="item" effect="dark" content="添加系统表配置" placement="bottom-start">
+                        <el-button size="small" v-on:click="dialog({title:'添加系统表',url:'@Url.ActionUrl("Add")',width:'680px',height:'80%',target:'self'})">添加</el-button>
+                    </el-tooltip>
+                </td>
+                <td align="right">
+                    <el-select size="small" v-model="searchData.searchField">
+                        <el-option value="name" label="按表名搜索"></el-option>
+                        <el-option value="remark" label="按标识搜索"></el-option>
+                    </el-select>
+                    <el-input type="text" size="small" maxlength="20" style="width:120px;" v-model="searchData.searchKeyword"></el-input>
+                    <el-button size="small" type="button" onclick="loadData()">确定</el-button>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+   <table border=0 cellpadding=0 cellspacing=0 class="table table-bordered">
+            <thead>
+                <tr>
+                    <td align="center">表名</td>
+                    <td align="center">标识</td>
+                    <td align="center">可扩展</td>
+                    <td align="center">删除保护</td>
+                    <td align="center">预定义字段</td>
+                    <td align="center">自定义字段</td>
+                    <td align="center">操作</td>
+                </tr>
+            </thead>
+            <tr class="item list-template-item" v-for="dataItem in dataList">
+                <td align="center">{{dataItem.Name}}</td>
+                <td align="center">{{dataItem.Remark}}</td>
+                <td align="center"><i class="fa fa-check-square-o" v-show="dataItem.CanExpand==1"></i><span v-show="dataItem.CanExpand==0">‐</span></td>
+                <td align="center"><i class="fa fa-check-square-o" v-show="dataItem.DeleteProtect==1"></i><span v-show="dataItem.DeleteProtect==0">‐</span></td>
+                <td align="center">
+                    <el-button type="small"  v-on:click="dialog({title:dataItem.Remark+'：字段配置',url:'@Url.ActionUrl("Set")?table='+dataItem.Name,target:'self',width:'90%',height:'90%'})">配置</el-button>
+                </td>
+                <td align="center">
+                    <el-button  type="small" v-on:click="dialog({title:dataItem.Remark+'：自定义字段管理',url:'@Url.ActionUrl("Index","Field")?table='+dataItem.Name,target:'self',width:'90%',height:'90%'})" :disabled="dataItem.CanExpand==0" >管理</el-button>
+                </td>
+                <td align="center">
+                    <el-button-group>
+                        <el-button type="small" v-on:click="dialog({title:dataItem.Remark,url:'@Url.ActionUrl("Edit")?table='+dataItem.Name,width:'680px',height:'80%',target:'self'})">修改</el-button>
+                        <el-button type="small" v-on:click="submit({url:'@Url.ActionUrl("delete")',confirmMsg:'是否确定删除？',data:{table:dataItem.Name},success:function(){deleteItem(dataList,dataItem,'Name')},cancel:isProtected(dataItem.DeleteProtect),cancelMsg:'当前表处于删除保护中，需进入编辑界面取消删除保护'})">删除</el-button>
+                    </el-button-group>
+                </td>
+            </tr>
+        </table>
+        <span class="lb_norecods" v-show="dataList.length==0">暂无记录!</span>
+        <ui-page-panel v-model="pageInfo" v-on:change="loadData" v-if="pageInfo.RecordCount>0"></ui-page-panel>
+   </div>
+
+    <script type="text/javascript">
+
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            searchData: {searchField:"name",searchKeyword:""},
+            pageInfo: { PageSize: 15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+            dataList:[],
+        },
+        methods: {
+            isProtected: function (protected)
+            {
+                return protected == "1";
+            },
+            loadData: function () {
+                loadData();
+            }
+        }
+    });
+
+    //加载数据
+    function loadData()
+    {
+        var serverData = extend({},vue.pageInfo,vue.searchData);
+        vue.ajax({
+        url: "@Url.ActionUrl("PageListData")",
+        data: serverData,
+        success: function (responseData) {
+            if (responseData!="") {
+                vue.dataList = responseData.Data;
+                vue.pageInfo = responseData.PageInfo;
+            }
+            }
+        });
+    }
+    loadData();
+    </script>

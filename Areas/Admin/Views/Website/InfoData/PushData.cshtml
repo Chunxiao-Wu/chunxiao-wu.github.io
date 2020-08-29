@@ -1,0 +1,81 @@
+﻿<div class="main" id="main">
+    <el-form ref="form" label-width="130px" label-position="top">
+        <el-form-item label="一、选择推送站点">
+            <ui-select v-model="formData.SiteId" :options="@Html.GetOptionsJson("pa_site", "remark")" v-validate="{data:formData.SiteId,dataType:'*',nullMsg:'请选择要推送的站点！'}"></ui-select>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+
+        <el-form-item label="二、选择推送信息表">
+            <ui-select v-model="formData.TableId" :options="tableList" v-validate="{data:formData.TableId,dataType:'*',nullMsg:'请选择要推送的信息表'}"></ui-select>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+
+        <el-form-item label="三、选择推送目标栏目">
+            <ui-cascader-panel v-model="formData.PushColumnIds" :options="columnList" :props="{expandTrigger: 'hover',multiple: true }" v-validate="{data:formData.PushColumnIds,dataType:'*',nullMsg:'请选择要推送的目标栏目！'}"></ui-cascader-panel>
+            <span class="help-block validate-tips-box">推送的栏目必须属于信息页类型,否则推送将会被忽略！</span>
+        </el-form-item>
+
+        <el-form-item  style="display:none">
+            <el-input v-model="formData.Ids" v-validate="{data:formData.Ids,dataType:'*',nullMsg:'请选择要推送的信息！'}"></el-input>
+            <span class="help-block"></span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">推送</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    //绑定数据
+    var ids = "@Request.QueryString["ids"]";
+    var tableId =@(StringHelper.Format<int>(Request.QueryString["tableId"]));
+    var formData = { SiteId: "@ViewBag.CurrentSiteId", TableId:tableId,Ids: ids, PushColumnIds:""};
+    var columnList =@Html.Raw(Html.GetTreeJson("pa_column", "name", "", "xuhao asc"));
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            formData: formData,
+            tableList:[],
+            columnList:[]
+        },
+        watch: {
+            "formData.SiteId": {
+                handler: function (newVal, oldVal) {
+                    var _this = this;
+                    _this.ajax({
+                        url: "@Url.ActionUrl("getOptions","InfoTable")",
+                        data: {siteId: _this.formData.SiteId },
+                        success: function (response) {
+                            _this.tableList = response;
+                        }
+                    });
+                },
+                immediate:true
+            },
+            "formData.TableId": {
+                handler: function (newVal, oldVal) {
+                    var _this = this;
+                    _this.ajax({
+                        url: "@Url.ActionUrl("GetColumnTree", "Column")",
+                        data: { tableId: _this.formData.TableId,from:"guest" },
+                        success: function (response) {
+                            _this.columnList = response;
+                        }
+                    });
+                },
+                immediate: true
+            }
+        },
+        methods: {
+            postSubmit: function () {
+                var validated =this.validateForm({});//表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData,successMsg:"推送成功！", success: function () { callBack() } });
+                }
+            }
+        },
+    });
+    function callBack() {
+
+    }
+</script>

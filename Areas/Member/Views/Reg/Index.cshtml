@@ -1,0 +1,202 @@
+﻿@{
+    Layout = "~/Areas/Member/Views/_LoginLayoutPage.cshtml";
+    ViewBag.Title = "用户注册";
+    IEnumerable<dynamic> canRegMemberGroupList = ViewBag.CanRegMemberGroupList;
+    canRegMemberGroupList = canRegMemberGroupList.Select(c => new { value = c.Id, label = c.Name });
+    int defaultMemberGroupId = (int)ViewBag.DefaultMemberGroupId; //默认会员组id
+    string guid = Html.Guid();
+    string beforeSubmitJs = "";
+}
+<div class="container cxform" id="regBox">
+    <div class="loginBox regBox" id="loginbox">
+        <div class="content-box">
+            <div class="media logo-media"></div>
+            <div class="login-sign">会员注册<span></span></div>
+            <div id="regBox" v-if="Open==0">对不起，网站注册功能已关闭！</div>
+            <div id="regBox" v-if="Open==1">
+                <el-form ref="form" label-position="top">
+                    <!--解决浏览器自动填充账户-->
+                    <input type="text" style="position:fixed;bottom:-9999px" />
+                    <input type="password" style="position:fixed;bottom:-9999px" />
+                    @if (canRegMemberGroupList.Count() > 1)
+                    {
+                        <el-form-item label="注册类型*">
+                            <ui-select v-model="formData.MemberGroupId" :multiple="false" style="width:100%" :clearable="false" v-bind:options="@JsonHelper.JsonParse(canRegMemberGroupList)" v-validate="{data:formData.MemberGroupId,dataType:'*',nullMsg:'请选择注册类型!'}"></ui-select>
+                            <span class="help-block validate-tips-box"></span>
+                        </el-form-item>
+                    }
+                    <el-form-item label="用户名*">
+                        <el-input v-model="formData.Username" placeholder="用户名" v-validate="{data:formData.Username,dataType:'username',nullMsg:'请填写用户名',errorMsg:'用户名控制在2-16字符之间，且只能是数字、字母、下划线或中文字符组成!'}" maxlength="15"></el-input>
+                        <span class="help-block validate-tips-box"></span>
+                    </el-form-item>
+                    <el-form-item label="密码*">
+                        <el-input v-model="formData.Password" type="password" autocomplete="off" placeholder="密码" v-validate="{data:formData.Password,dataType:'password',nullMsg:'请填写密码!',errorMsg:'密码长度控制在2到16位字符之间！'}" maxlength="16"></el-input>
+                        <span class="help-block validate-tips-box"></span>
+                    </el-form-item>
+                    @if (ViewBag.MobileFieldSet == "1" || ViewBag.MobileFieldSet == "2")
+                    {
+                        <el-form-item label="手机*">
+                            <el-input v-model="formData.Mobile" placeholder="手机号码" id="mobile" v-validate="{data:formData.Mobile,dataType:'mobile',nullMsg:'请填写手机号！',errorMsg:'手机号码格式错误！'}" maxlength="15"></el-input>
+                            <span class="help-block validate-tips-box"></span>
+                        </el-form-item>
+                    }
+                    @if (ViewBag.MobileFieldSet == "2")
+                    {
+                        <el-form-item label="手机验证码*">
+                            <ui-input-code placeholder="点击右侧按钮获取邮件验证码" v-model="formData.SmsCode" focus-target="#mobile" type="mobile" :account="formData.Mobile" url-api="/E/SmsCode/Send" v-validate="{data:formData.SmsCode,dataType:'numeric',minLength:6,minLengthErrorMsg:'手机验证码为6位数字！',nullMsg:'请填写验证码'}"></ui-input-code>
+                            <span class="help-block validate-tips-box"></span>
+                        </el-form-item>
+                    }
+                    @if (ViewBag.EmailFieldSet == "1" || ViewBag.EmailFieldSet == "2")
+                    {
+                        <el-form-item label="邮箱*">
+                            <el-input v-model="formData.Email" placeholder="邮箱地址" id="email" v-validate="{data:formData.Email,dataType:'email',ignoreEmpty:true,nullMsg:'请填写邮箱地址！',errorMsg:'邮箱地址格式错误！'}" maxlength="30"></el-input>
+                            <span class="help-block validate-tips-box"></span>
+                        </el-form-item>
+                    }
+                    @if (ViewBag.EmailFieldSet == "2")
+                    {
+                        <el-form-item label="邮件验证码*">
+                            <ui-input-code placeholder="点击右侧按钮获取邮件验证码" v-model="formData.EmailCode" focus-target="#email" :account="formData.Email" url-api="/E/EmailCode/Send" v-validate="{data:formData.EmailCode,dataType:'numeric',minLength:6,minLengthErrorMsg:'邮件验证码为6位数字！',nullMsg:'请填写邮件验证码'}"></ui-input-code>
+                            <span class="help-block validate-tips-box"></span>
+                        </el-form-item>
+                    }
+                    @{
+
+                        var data = new ViewDataDictionary();
+                        data.Add("from", PageAdmin.Common.FromEnum.Member);
+                        data.Add("guid", guid);
+                        data.Add("currentUser", null);
+                        data.Add("memberGroupId", ViewBag.DefaultMemberGroupId);
+                        data.Add("i", 0);
+                        data.Add("fieldPrefix", "formData");
+                        IEnumerable<dynamic> FieldData = ViewBag.FieldData;
+                        int i = 0;
+                        if (FieldData != null)
+                        {
+                            foreach (var row in FieldData)
+                            {
+                                data["i"] = i;
+                                beforeSubmitJs += row.BeforeSubmitJs;
+                                Html.RenderPartial("~/Areas/E/Views/CustomForm/FormPartial.cshtml", (object)row, data);
+                                i++;
+                            }
+                        }
+
+                    }
+                    @if (ViewBag.VerificationCode == "1")
+                    {
+                        <el-form-item label="验证码*">
+                            <el-input v-model="formData.VerificationCode" id="verificationCode" maxlength="4" placeholder="输入右侧的验证码" v-validate="{data:formData.VerificationCode,dataType:'*',minLength:4,minLengthErrorMsg:'验证码最少4个字符',focusTarget:'#verificationCode',nullMsg:'请填写验证码!'}">
+                                <template slot="append">
+                                    <ui-verification-code-image src="/E/VerificationCode/?width=100&height=30"></ui-verification-code-image>
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                    }
+                    <el-form-item>
+                        <div class="controls clearfix" style="margin:22px 0px">
+                            <el-checkbox v-model="formData.Agreement" label="已阅读并同意" :true-label="1" v-validate="{data:formData.Agreement,dataType:'*',nullMsg:'必须阅读并同意用户注册协议'}"></el-checkbox>
+                            <a href="@Url.ActionUrl("RegAgreement")" target="_blank" class="blue">《用户注册协议》</a>
+                        </div>
+                    </el-form-item>
+                    <el-form-item>
+                        <div class="controls">
+                            <el-button type="primary" v-on:click="postSubmit">注册</el-button>
+                        </div>
+                    </el-form-item>
+                </el-form>
+                <div class="copyright" style="margin-top:15px;">
+                    已有账户？<a href="@Url.ActionUrl("Index","Login")" class="text-primary">去登录</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var formData = @Html.RawModel((string)Model);
+    formData.Agreement = 1;
+    formData.Guid = "@guid";
+    formData.MemberGroupId = @ViewBag.DefaultMemberGroupId;
+    formData.VerificationCode = "";
+    //formData = updateFormData(formData);
+    //vue实例化
+    var vue = new Vue({
+        el: "#regBox",
+        data: {
+            formData: formData,
+            Open:@ViewBag.Open,
+        },
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({ beforeSubmit: function () { return BeforeSubmit() }});//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, showSuccessMsg: false, success: loginSuccess });
+                }
+            },
+            setLocalStorage: function (formData) {
+                localStorage.removeItem("regFormData");
+                var formDataJson = JSON.stringify(formData);
+                localStorage.setItem("regFormData", formDataJson);
+                
+            },
+        },
+        //watch: {
+        //    formData: {
+        //        handler: function (newFormData, oldFormData) {
+        //            this.setLocalStorage(formData);
+        //        },
+        //        deep: true,
+        //    },
+        //},
+    });
+    function BeforeSubmit()
+    {
+        @Html.Raw(beforeSubmitJs)
+        return true;
+    }
+    function loginSuccess(result)
+    {
+        vue.$message.success("注册成功!");
+        var to = request("to");
+        if (to == "") {
+            to = "@Url.ActionUrl("Success")" + urlEncode(formData.Username)
+        }
+        top.location.href = to;
+    }
+    addEvent(window, 'keyup', function (event) {
+        if (event.keyCode == 13) {
+            vue.postSubmit();
+        }
+    });
+    function updateFormData(formData)
+    {
+        if (window.performance.navigation.type != 1) {
+            localStorage.removeItem("regFormData");
+        } 
+        var oldFormData = localStorage.getItem("regFormData");
+        if (localStorage.regState == undefined) {
+            localStorage.setItem("regState", 0);
+        }
+        var regState = localStorage.regState;
+        if (regState == 0 && oldFormData != undefined) {
+            formData = JSON.parse(oldFormData);
+        }
+        return formData;
+    }
+    function init() {
+        var $body = document.querySelector("body");
+        var winHeight = clientSize().height;
+        var $loginBox = document.querySelector("#loginbox");
+        var mHeight = $loginBox.offsetHeight;
+        var topMargin = parseInt(winHeight / 2) - parseInt(mHeight / 2) - 40;
+        if (topMargin <= 10) {
+            topMargin = 10;
+        }
+        $loginBox.style.marginTop = topMargin + "px";
+    }
+    document.ready(function () {
+        init()
+    });
+    window.onresize = init;
+</script>

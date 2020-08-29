@@ -1,0 +1,40 @@
+﻿@model string
+
+<div class="main">
+    <table border=0 cellpadding=0 cellspacing=0 class="table table-bordered" id="tb_list">
+        <thead>
+            <tr>
+                <td align="center" style="width:50px"><input type="checkbox" title="选择" class="ui-selectInvert hidden" data-custom-params="isReverse:false">选择</td>
+                <td align="left">用户组</td>
+            </tr>
+        </thead>
+        <tr class="item list-template-item" id="item_{id}" name="{name}">
+            <td align="center" style="width:50px"><input type="checkbox" value="{id}" class="checked-item"></td>
+            <td align="left">{name}</td>
+        </tr>
+    </table>
+
+    <div class="submit-footerbar">
+        <label class="control-label"></label>
+        <div class="controls">
+            <button type="button" class="btn btn-primary btn-sm ui-closeDialog">确定</button>
+            <button type="button" class="btn btn-sm btn-default ui-closeDialog">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var objName = Request("objname");
+    function LoadData()
+    {
+        var ajaxUrl = "@Url.ActionUrl("ListData", "MemberGroup")?_byuser=1"
+        $("#tb_list").ListBind({url:ajaxUrl, callBack: "LoadedInit" });
+    }
+   function LoadedInit()
+   {
+       SetSelectedDisabled();
+    }
+    LoadData();
+</script>
+
+<script src="/Js/selectData.js" type="text/javascript"></script>

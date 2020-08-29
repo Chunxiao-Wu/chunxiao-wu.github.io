@@ -1,0 +1,107 @@
+﻿@{
+    Layout = "../_QuickLayoutPage.cshtml";
+}
+<div class="container" id="LoginBox">
+    <a class="closeBtn" href="javascript:closeSelf()">&#10005</a>
+    <div class="loginBox">
+        <div class="content-box">
+            <div class="login-sign">会员登录</div>
+            <div v-if="open==0">对不起，网站登录已经关闭！</div>
+            <div v-if="open==1">
+                <el-form ref="form" label-width="0px" label-position="left">
+                    <el-form-item>
+                        <el-input v-model="formData.Username" placeholder="@ViewBag.PlaceHolder" maxlength="50" v-validate="{data:formData.Username,dataType:'*',nullMsg:'请填写登录账号'}"></el-input>
+                        <span class="help-block validate-tips-box"></span>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-input type="password" v-model="formData.Password" autocomplete="off" placeholder="登录密码" maxlength="50" v-validate="{data:formData.Password,dataType:'password',nullMsg:'请填写登录密码'}"></el-input>
+                        <span class="help-block validate-tips-box"></span>
+                    </el-form-item>
+                    @if (ViewBag.VerificationCode == "1")
+                    {
+                        <el-form-item>
+                            <el-input v-model="formData.VerificationCode" id="verificationCode" maxlength="4" placeholder="输入右侧的验证码" v-validate="{data:formData.VerificationCode,dataType:'*',minLength:4,minLengthErrorMsg:'验证码最少4个字符',focusTarget:'#verificationCode',nullMsg:'请填写验证码!'}">
+                                <template slot="append">
+                                    <ui-verification-code-image src="/E/VerificationCode/?width=100&height=30"></ui-verification-code-image>
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                    }
+                    <el-form-item>
+                        <div class="controls clearfix">
+                            <el-checkbox v-model="formData.SaveCookie">记住登录信息</el-checkbox>
+                            <div class="pull-right">
+                                <a href="@Url.ActionUrl("Quick","Reg")">注册会员</a>&nbsp;&nbsp;
+                                <a href="@Url.ActionUrl("Quick","FindPassword")">忘记密码?</a>
+                            </div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item>
+                        <div class="controls">
+                            <el-button type="primary" v-on:click="postSubmit">登录</el-button>
+                        </div>
+                    </el-form-item>
+                </el-form>
+                @*<div class="quickLogin clearfix">
+                    <h5>使用合作账户登录</h5>
+                    <div>
+                        <a href="#" class="quick-login-icon qq-icon" title="QQ登录"></a>
+                        <a href="#" class="quick-login-icon weixin-icon" title="微信登录"></a>
+                        <a href="#" class="quick-login-icon alipay-icon" title="支付宝登录"></a>
+                    </div>
+                </div>*@
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var formData = { Username: "", Password: "", VerificationCode: "", SaveCookie: false };
+    var localStorageKey = "memberLoginInfo4008";
+    var saveInfo = getLocalStorage(localStorageKey);
+    if (saveInfo != "") {
+        formData = JSON.parse(saveInfo);
+    }
+    formData.VerificationCode = "";
+
+    //vue实例化
+    var vue = new Vue({
+        el: "#LoginBox",
+        data: {
+            formData: formData,
+            open:@ViewBag.Open,
+        },
+        methods: {
+              postSubmit: function () {
+                  var validated = this.validateForm();//数据验证
+                   if (validated)
+                   {
+                       this.submit({ url: "@Url.ActionUrl("Index")", data: formData, success: loginSuccess, showFailMsg: false, showSuccessMsg: false, failCallback: failLogin, });
+                   }
+              },
+        },
+    });
+    function loginSuccess(result) {
+        if (formData.SaveCookie) {
+            setLocalStorage(localStorageKey, JSON.stringify(formData));
+        }
+        else {
+            removeLocalStorage(localStorageKey);
+        }
+        vue.$message.success("登录成功!")
+        var loadingInstance = vue.$loading();
+        setTimeout(function () {
+            if (typeof (parent.LoginSuccess) == "function") {
+                parent.LoginSuccess(result);
+            }
+            closeSelf();
+        }, 3000);
+    }
+    function failLogin(data) {
+        vue.$message.error(data.Msg)
+    }
+    addEvent(window, 'keyup', function (event) {
+        if (event.keyCode == 13) {
+            vue.postSubmit();
+        }
+    });
+</script>

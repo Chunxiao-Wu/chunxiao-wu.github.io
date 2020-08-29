@@ -1,0 +1,191 @@
+﻿@{
+    Layout = null;
+    var addData = new ViewDataDictionary();
+    IEnumerable<dynamic> menuList = ViewBag.Menu;
+    addData.Add("MenuList", menuList); //IEnumerable<dynimic>
+    addData.Add("AdminPath", ViewBag.AdminPath);
+    addData.Add("CanAdminTableList", ViewBag.CanAdminTableList); //Enumerable<dynimic>
+    addData.Add("CurrentUser", ViewBag.CurrentUser);
+    string topMenuName = "";
+    string homeLink = (string)ViewBag.HomeLink;
+}
+<!DOCTYPE HTML>
+<HTML>
+<head>
+    <title>会员中心</title>
+    <meta name="Author" content="PageAdmin CMS" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="~/Incs/elementUi/2.13/element-ui.css">
+    <link rel="stylesheet" href="~/Incs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="~/Areas/Admin/Css/Index.css" type="text/css">
+    <script src="~/Incs/vue/2.6.11/vue.js" type="text/javascript"></script>
+    <script src="~/Incs/elementUi/2.13/element-ui.js" type="text/javascript"></script>
+    <script src="~/FrameUi/1.0/basic.js" type="text/javascript"></script>
+    <script src="~/FrameUi/1.0/vueExtend.js" type="text/javascript"></script>
+    <script src="~/FrameUi/1.0/validateForm.js" type="text/javascript"></script>
+</head>
+<body style="overflow:hidden">
+    <div id="mainBox" style="height:100%;width:100%">
+        <!--header开始-->
+            <div class="header">
+                <a href="http://www.pageadmin.net" target="_blank" class="logo"></a>
+                <div class="box">
+                    <div class="left topmenu" id="topmenu">
+                        <ul>
+                            <li class="item home-item" title="会员首页"><a href="@Url.ActionUrl("Home")" target="mainContainer"><i class="fa fa-home fa-fw"></i></a></li>
+                            @{
+                                IEnumerable<dynamic> topMenuList = menuList.Where(item => item.Level == 1).OrderBy(item => item.Xuhao);
+                                int idx = 0;
+                                foreach (var item in topMenuList)
+                                {
+                                    if (idx == 0)
+                                    {
+                                        topMenuName = item.Name;
+                                    }
+                                    int id = item.Id;
+                                    bool hasChildrens = menuList.Where(c => c.ParentId == id).Count() > 0;
+                                    if (hasChildrens)
+                                    {
+                                        <li class="item menu-item" date-top-menu-id="@item.Id" onclick="setTopIndex(@idx,'@item.Name',this)"><span>@item.Name</span></li>
+                                    }
+                                    idx++;
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <div class="right">
+                        <el-menu class="el-menu-demo" mode="horizontal">
+                            <el-menu-item index="1"><a href="@homeLink" target="_blank" title="网站首页"><span class="fa fa-globe"></span></a></el-menu-item>
+                            <el-submenu index="2" popper-class="el-submenu-demo">
+                                <template slot="title">
+                                    <span class="fa fa-user"> 账户中心</span>
+                                </template>
+                                <el-menu-item><a href="@Url.ActionUrl()">会员首页</a></el-menu-item>
+                                <el-menu-item><a href="javascript:void(0)" v-on:click="exit">退出登录</a></el-menu-item>
+                                <el-menu-item><a href="@homeLink" target="_blank">网站首页</a></el-menu-item>
+                            </el-submenu>
+                        </el-menu>
+                    </div>
+                </div>
+            </div>
+        <!--header结束-->
+        <div class="main-frame" v-bind:style="mainSize" :class="{'expand-menu':isExpand}">
+            <div class="leftarea">
+                <div class="leftmenu-classname icon-menu-switch" v-on:click="expandMenu"><span class="fa fa-bars"></span> <span v-show="isExpand">{{topMenuName}}</span></div>
+                @{
+                    Html.RenderPartial("LeftMenu", addData);
+                }
+            </div>
+            <div class="rightarea">
+                <div class="historytab"><ul></ul></div>
+                <iframe name="mainContainer" id="mainContainer" ref="mainContainer" src="@Url.ActionUrl("Home", "Default")" frameborder="0" scrolling="auto" style="border:none;" width="100%" height="100%" allowtransparency="true"></iframe>
+            </div>
+        </div>
+        </div>
+    <script type="text/javascript">
+        var vue = new Vue({
+            el: "#mainBox",
+            data: {
+                isExpand: true,
+                currentId:"",
+                topIndex: 0,
+                topMenuName:"@topMenuName",
+                mainSize: { width:"0px",height:"0px"}
+            },
+            computed:{
+                currentStyle: function () {
+                   return function (id) {
+                        if (id == this.currentId) {
+                            return { "current": true }
+                        }
+                        return { "current": false };
+                    }
+                }
+            },
+            methods: {
+                setIframeUrl: function (url){
+                    this.iframeUrl = url;
+                },
+                expandMenu: function () {//左侧菜单展开
+                    this.isExpand = !this.isExpand;
+                },
+                open: function (isFinal,url,target,id, $event) {
+                    if (isFinal == "1") {
+                        this.currentId = id;
+                        if (target == "_blank") {
+                            window.open(url);
+                        }
+                        else {
+                            this.$refs.mainContainer.setAttribute("src", url);
+                        }
+                    }
+                    else {
+                        var $parent = $event.currentTarget.parentNode;
+                        $parent.classList.toggle("shut");
+                    }
+                    $event.preventDefault();
+                },
+
+                  restartApplication: function () {
+                var url = "@Url.ActionUrl("RestartApplication")";
+                var vue = this;
+                vue.ajax({type: "post", async: true, url: url, success: function () {
+                    vue.$message.success("重启成功！");
+                }});
+            },
+            exit: function () {
+                var url = "@Url.ActionUrl("Exit","Login")";
+                var vue = this;
+                vue.ajax({
+                    type: "get", async: true, url: url, success: function () {
+                        vue.$message.success("正在退出！");
+                        location.href = "@Url.ActionUrl("Index","Login")";
+                    }
+                });
+            },
+            }
+        });
+
+        var url = decodeURIComponent(request("url"));
+        if (url != "") {
+            vue.$refs.mainContainer.setAttribute("src", url); //vue不能自动更新iframe的src
+        }
+
+        //顶部菜单触发
+        function setTopIndex(idx, topMenuName, obj) {
+            vue.topIndex = idx;
+            vue.topMenuName = topMenuName;
+            var $childs = obj.parentNode.children;
+            for (var i = 0; i < $childs.length; i++) {
+                $childs[i].classList.remove("current");
+            }
+            obj.classList.add("current");
+        }
+
+        var windowSize = function () {
+            return ["Height", "Width"].map(function (name) {
+                return window["inner" + name] || document.compatMode === "CSS1Compat" && document.documentElement["client" + name] || document.body["client" + name]
+            });
+        }
+
+        function winSize() {
+            var str = windowSize();
+            var strs = new Array();
+            strs = str.toString().split(",");
+            var height = strs[0] - 50;
+            var width = strs[1];
+            vue.mainSize.width = width + "px";
+            vue.mainSize.height = height + "px";
+            if (width < 1024) {
+                vue.mainSize.width = "1024px";
+            }
+        }
+        winSize();
+        window.onresize = function () {
+            winSize();  //浏览器缩放实时调用
+        }
+    </script>
+</body>
+
+</HTML>

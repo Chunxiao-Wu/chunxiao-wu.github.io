@@ -1,0 +1,75 @@
+﻿@{
+    var ip = StringHelper.GetClientIP();
+    var hideMenu = ViewBag.HideMenu == null ? false : true;
+}
+<!DOCTYPE html>
+<html class="_frame_layout">
+<head>
+    <title>pageadmin网站管理系统</title>
+    <meta name="author" content="PageAdmin CMS" data-url="http://www.pageadmin.net" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit" />
+    <link rel="stylesheet" href="~/Incs/elementUi/2.13/element-ui.css">
+    <link rel="stylesheet" href="~/Incs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="~/FrameUi/1.0/css/layout.css">
+    <script src="~/Incs/vue/2.6.11/vue.js" type="text/javascript"></script>
+    <script src="~/Incs/elementUi/2.13/element-ui.js" type="text/javascript"></script>
+    <script src="~/FrameUi/1.0/basic.js" type="text/javascript"></script>
+    <script src="/FrameUi/1.0/ui.js" type="text/javascript"></script>
+    <script src="~/FrameUi/1.0/vueExtend.js" type="text/javascript"></script>
+    <script src="~/FrameUi/1.0/validateForm.js" type="text/javascript"></script>
+    <script src="~/FrameUi/1.0/vue-dragging.js" type="text/javascript"></script>
+    <!--[if lte IE 9]>
+    <script src="/Incs/bootstrap/js/respond.min.js"></script>
+    <script src="/Incs/bootstrap/js/html5.js"></script>
+    <![endif]-->
+</head>
+<body>
+    @if (!hideMenu)
+    {
+        <div class="_frame_layout_container" id="_frame_layout">
+            <div class="_frame_layout_left_area transtraion" id="_frame_layout_left_area">
+                @Html.Partial("Menu")
+            </div>
+            <div class="_frame_layout_middel_btn" id="_frame_layout_middel_btn" title="收缩/展开菜单"><b class="fa fa-chevron-left"></b></div>
+            <div class="_frame_layout_right_area transtraion" id="_frame_layout_right_area">
+                @RenderBody()
+            </div>
+        </div>
+    }
+    else
+    {
+        @RenderBody()
+    }
+    <script type="text/javascript">
+        var $frame_layout = document.getElementById("_frame_layout");
+        var $frame_layout_middel_btn = document.getElementById("_frame_layout_middel_btn");
+        var $frame_layout_menu_a = document.querySelectorAll("._frame_layout_menu li");
+        var $frame_layout_menu_sort = document.getElementsByClassName("_frame_layout_menu_sort");
+        var _frameCurrentLocation = location.href;
+        for (var i = 0; i < $frame_layout_menu_a.length; i++) {
+            var $item = $frame_layout_menu_a[i];
+            var $a = $item.getElementsByTagName("a");
+            if ($a.length > 0) {
+                $a = $a[0];
+            }
+            else {
+                continue;
+            }
+            if (_frameCurrentLocation.indexOf($a.getAttribute("href")) >= 0) {
+                $item.classList.add("_menu_current");
+                break;
+            }
+        }
+        for (var i = 0; i < $frame_layout_menu_sort.length; i++) {
+            $frame_layout_menu_sort[i].onclick = function () {
+                this.classList.toggle("_menu_sort_shut_");
+            }
+        }
+        addEvent($frame_layout_middel_btn, "click", function () {
+            $frame_layout.classList.toggle("_frame_layout_container_shut");
+        });
+    </script>
+</body>
+</html>

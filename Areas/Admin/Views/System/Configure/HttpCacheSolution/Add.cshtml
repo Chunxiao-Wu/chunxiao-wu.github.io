@@ -1,0 +1,63 @@
+﻿<style>
+    .el-input{width:350px;}
+</style>
+<div class="main" id="main">
+    <el-form ref="form" label-width="150px" label-position="left">
+        <el-form-item label="方案名称">
+            <el-input v-model="Name" maxlength="50" v-validate="{data:Name,dataType:'*',nullMsg:'请填写方案名称!'}"></el-input>
+            <span class="help-block validate-tips-box">仅用于标识</span>
+        </el-form-item>
+        <el-form-item label="栏目页缓存分钟数">
+            <el-input v-model="ColumnCacheMinutes" maxlength="10" v-validate="{data:ColumnCacheMinutes,dataType:'numeric',nullMsg:'请填写缓存时间!',errorMsg:'栏目页缓存时间只能填写数字!'}"></el-input> 分钟
+            <span class="help-block validate-tips-box">0表示不缓存</span>
+        </el-form-item>
+        <el-form-item label="缓存最大列表页码">
+            <el-input v-model="CacheMaxPage" maxlength="10" v-validate="{data:CacheMaxPage,dataType:'numeric',nullMsg:'请填写页码数!',errorMsg:'页码数只能填写大于等于1的数字!'}"></el-input>
+            <span class="help-block validate-tips-box">只对有分页有效，超过最大页码数后将不再进行缓存。</span>
+        </el-form-item>
+        <el-form-item label="信息内容页缓存分钟数">
+            <el-input v-model="DetailCacheMinutes" maxlength="10" v-validate="{data:DetailCacheMinutes,dataType:'numeric',nullMsg:'请填写缓存时间!',errorMsg:'信息内容页缓存时间只能填写数字!'}"></el-input> 分钟
+            <span class="help-block validate-tips-box">只对信息内容页有效，0表示不缓存，如果信息内容页多，不建议进行缓存</span>
+        </el-form-item>
+        <el-form-item label="不缓存的url参数">
+            <el-input v-model="NocacheUrlParams" maxlength="100"></el-input>
+            <span class="help-block validate-tips-box">多个参数用半角逗号隔开，url参数中包含设置的参数，则不进行缓存</span>
+        </el-form-item>
+        <el-form-item label="不缓存的url关键词">
+            <el-input v-model="NocacheUrlKeywords" maxlength="100"></el-input>
+            <span class="help-block validate-tips-box">多个关键词用半角逗号隔开，如果url中包含设置的关键词，则不进行缓存</span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    //绑定数据
+    var id = request("id");
+    var formData = { Id: 0, Name: "", ColumnCacheMinutes: 0, CacheMaxPage: 1, DetailCacheMinutes: 0, NocacheUrlParams: "", NocacheUrlKeywords: "" };
+    if (id!= "")
+    {
+       formData = @Html.Raw(Model ?? "{}");
+    }
+    var vue = new Vue({
+        el: "#main",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({tipsStyle: 1 });//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, success: "PostBack()" });
+                }
+            }
+        },
+    });
+    function PostBack() {
+        if (id == "")
+        {
+            location.href = location.href;
+        }
+        parent.loadData();
+    }
+</script>

@@ -1,0 +1,33 @@
+﻿<div class="main" id="main">
+    <el-form label-position="left" label-width="100px">
+        <el-form-item label="文件名称">
+            <el-input v-model="name" maxlength="50" style="width:90%;" v-validate="{data:name,dataType:'*',nullMsg:'请填写目录名！',errorMsg:'目录名不能带特殊符号！'}"></el-input>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar">
+        <el-button type="primary" v-on:click="postSubmit">提交保存</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    var formData = { name: "", path: "" };
+    formData.path = parent.vue.path.join("/");
+    var vue= new Vue({
+        el: "#main",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({ tipsStyle: 1});//jquery表单验证
+                if (validated)
+                {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, success:"PostBack()"});
+                }
+            },
+        },
+    });
+    function PostBack() {
+        location.href = location.href;
+        parent.loadData();
+    }
+</script>

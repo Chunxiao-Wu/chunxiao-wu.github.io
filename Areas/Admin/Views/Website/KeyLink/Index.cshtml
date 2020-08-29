@@ -1,0 +1,66 @@
+﻿<div class="current-location">
+    <ul>
+        <li class="left"><i class="glyphicon glyphicon-home"></i><span>@ViewBag.CurrentSiteName</span> &gt; <a href="javascript:void(0)" onclick="location.href=location.href">关键词链接</a></li>
+        <li class="right"><a href="javascript:void(0)" onclick="LoadData()" title="刷新"><span class="glyphicon glyphicon-refresh"></span></a></li>
+    </ul>
+</div>
+<div class="main">
+    <table cellpadding="0" cellspacing="0" border="0" class="tb-head">
+        <tr class="controls form-inline form-group-sm clearfix">
+            <td class="btn-group left">
+                <button type="button" class="btn btn-default btn-sm ui-selectInvert">反选</button>
+                <button type="button" class="btn btn-default dropdown-toggle btn-sm" data-toggle="dropdown" aria-expanded="false">
+                    菜单
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li>
+                        <a class="ui-dialog" data-custom-params="title:'添加',url:'@Url.ActionUrl("Add")',width:'600px',height:'280px'" href="javascript:void(0)">添加</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href="javascript:void(0)" class="ui-deleteMultiple" data-custom-params="url:'@Url.ActionUrl("Delete")'">删除</a></li>
+                </ul>
+            </td>
+            <td class="right">
+                <select id="field" name="field" class="form-control ui-queryString ui-setName">
+                    <option value="key">关键词</option>
+                    <option value="link">关键词链接</option>
+                </select>
+                <input type="text" id="keyword" class="form-control ui-queryString ui-keyword" style="width:100px">
+                <button type="button" class="btn btn-default btn-sm ui-queryString-search">确定</button>
+            </td>
+        </tr>
+    </table>
+
+    <table border=0 cellpadding=0 cellspacing=0 class="table table-bordered" id="tb_list">
+        <thead>
+            <tr>
+                <td align="center" width="30px"><input type="checkbox" title="选择" class="ui-selectInvert" data-custom-params="isReverse:false"></td>
+                <td align="center" width=20%>关键词</td>
+                <td align="center" width=48%>链接</td>
+                <td align="center" width=29%>管理</td>
+            </tr>
+        </thead>
+            <tr class="item list-template-item" id="item_{id}">
+                <td align="center"><input type="checkbox"  value="{id}" class="checked-item"></td>
+                <td align=left><span id="List_Lb_Name_0">{key}</span></td>
+                <td align="center">{link}</td>
+                <td align="center">
+                    <input type="hidden" name="id" value="{id}" />
+                    <div class="btn-group btn-group-sm">
+                        <a href="javascript:void(0)" class="btn btn-default btn-sm ui-dialog" data-custom-params="title:'{key}-修改',url:'@Url.ActionUrl("Edit")?id={id}',width:'600px',height:'280px'">修改</a>
+                        <a href="javascript:void(0)" class="btn btn-default btn-sm ui-deleteSingle" data-custom-params="url:'@Url.ActionUrl("Delete")',id:'{id}'">删除</a>
+                    </div>
+
+                </td>
+            </tr>
+</table>
+</div>
+<script type="text/javascript">
+    function LoadData()
+    {
+        var url = "@Url.ActionUrl("PageListData")"
+        $("#tb_list").ListBind({ url: url, callBack: "LoadedInit" });
+    }
+    LoadData();
+</script>

@@ -1,0 +1,35 @@
+﻿@{string templateDirectory = Html.TemplateDirectory();}<!DOCTYPE html>
+<html>
+<head>
+    <title>@Html.Title()</title>
+    <meta name="keywords" content="@Html.Keywords()" />
+    <meta name="description" content="@Html.Description()" />
+    <meta name="author" content="PageAdmin CMS" data-url="http://www.pageadmin.net" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=0,minimal-ui" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="renderer" content="webkit" />
+    <link rel="stylesheet" href="@templateDirectory/Css/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="@templateDirectory/Css/animate.min.css" />
+    <link rel="stylesheet" href="@templateDirectory/Css/base.css" />
+    <link rel="stylesheet" href="@templateDirectory/Css/style.css" />@RenderSection("PageCss", false)
+    <script src="@templateDirectory/Js/jquery.min.js"></script>
+    <script src="@templateDirectory/Js/basic.js"></script>
+    <script src="@templateDirectory/Js/script.js"></script>
+    <!--[if lte IE 9]>
+        <script src="/Incs/bootstrap/js/respond.min.js"></script>
+        <script src="/Incs/bootstrap/js/html5.js"></script>
+    <![endif]-->
+</head>
+<body>
+    @Html.Partial("TopPartial")
+        @RenderBody()
+    @Html.Partial("FooterPartial")
+</body>
+<!--[if lte IE 9]>
+<script type="text/javascript">
+    CheckInternetExplorer();//检测低版本ie
+</script>
+<![endif]-->
+</html>

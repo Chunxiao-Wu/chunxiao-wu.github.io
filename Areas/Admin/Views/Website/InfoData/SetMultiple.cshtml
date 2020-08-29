@@ -1,0 +1,176 @@
+﻿@{
+    int tableId = ViewBag.TableId;
+    CurrentUser user = ViewBag.CurrentUser;
+}
+<div class="main" id="main">
+    <el-form label-width="150px" label-position="left">
+        <el-form-item label="目标栏目">
+            <label slot="label">
+                目标栏目
+                <el-checkbox v-model="formSelected._columnId"></el-checkbox>
+            </label>
+            <ui-cascader v-model="formData.ColumnId" placeholder="请选择栏目" :options="@Html.GetColumnTreeJson(tableId,user)" :props="{ expandTrigger: 'hover',multiple:false }"></ui-cascader>
+            <span class="help-block">只有选择最终栏目才有效。</span>
+        </el-form-item>
+        <el-form-item>
+            <label slot="label">
+                推荐属性
+                <el-checkbox v-model="formSelected._isGood"></el-checkbox>
+            </label>
+            <el-select v-model="formData.IsGood">
+                <el-option :value="0" label="推荐属性"></el-option>
+                <el-option :value="1" label="1级推荐"></el-option>
+                <el-option :value="2" label="2级推荐"></el-option>
+                <el-option :value="3" label="3级推荐"></el-option>
+                <el-option :value="4" label="4级推荐"></el-option>
+                <el-option :value="5" label="5级推荐"></el-option>
+                <el-option :value="6" label="6级推荐"></el-option>
+                <el-option :value="7" label="7级推荐"></el-option>
+                <el-option :value="8" label="8级推荐"></el-option>
+                <el-option :value="9" label="9级推荐"></el-option>
+                <el-option :value="10" label="10级推荐"></el-option>
+            </el-select>
+            <span class="help-block"></span>
+        </el-form-item>
+        <el-form-item>
+            <label slot="label">
+                热门属性
+                <el-checkbox v-model="formSelected._isHot"></el-checkbox>
+            </label>
+            <el-select v-model="formData.IsHot">
+                <el-option :value="0" label="热门属性"></el-option>
+                <el-option :value="1" label="1级热门"></el-option>
+                <el-option :value="2" label="2级热门"></el-option>
+                <el-option :value="3" label="3级热门"></el-option>
+                <el-option :value="4" label="4级热门"></el-option>
+                <el-option :value="5" label="5级热门"></el-option>
+                <el-option :value="6" label="6级热门"></el-option>
+                <el-option :value="7" label="7级热门"></el-option>
+                <el-option :value="8" label="8级热门"></el-option>
+                <el-option :value="9" label="9级热门"></el-option>
+                <el-option :value="10" label="10级热门"></el-option>
+            </el-select>
+            <span class="help-block"></span>
+        </el-form-item>
+        <el-form-item>
+            <label slot="label">
+                置顶属性
+                <el-checkbox v-model="formSelected._isTop"></el-checkbox>
+            </label>
+            <el-select v-model="formData.IsTop">
+                <el-option :value="0" label="置顶属性"></el-option>
+                <el-option :value="1" label="1级置顶"></el-option>
+                <el-option :value="2" label="2级置顶"></el-option>
+                <el-option :value="3" label="3级置顶"></el-option>
+                <el-option :value="4" label="4级置顶"></el-option>
+                <el-option :value="5" label="5级置顶"></el-option>
+                <el-option :value="6" label="6级置顶"></el-option>
+                <el-option :value="7" label="7级置顶"></el-option>
+                <el-option :value="8" label="8级置顶"></el-option>
+                <el-option :value="9" label="9级置顶"></el-option>
+                <el-option :value="10" label="10级置顶"></el-option>
+            </el-select>
+            <span class="help-block"></span>
+        </el-form-item>
+        <el-form-item>
+            <label slot="label">
+                点击数
+                <el-checkbox v-model="formSelected._clicks"></el-checkbox>
+            </label>
+            <el-input-number v-model="formData.Clicks" id="Clicks"></el-input-number>
+            <span class="help-block"></span>
+        </el-form-item>
+        @*<el-form-item>
+            <label slot="label">
+                Tag标签
+                <el-checkbox v-model="formSelected._tags"></el-checkbox>
+            </label>
+            <ui-tag v-model="formData.Tags"></ui-tag>
+            <span class="help-block">添加的标签可以在网站>标签管理中进行管理</span>
+        </el-form-item>*@
+        <el-form-item>
+            <label slot="label">
+                预上线日期
+                <el-checkbox v-model="formSelected.__onlineDate"></el-checkbox>
+            </label>
+            <el-date-picker v-model="formData.OnlineDate" type="date" value-format="yyyy-MM-dd" placeholder="请选择日期"></el-date-picker>
+            <span class="help-block">预上线日期大于当前时间后自动上线（isOnline字段值更新为1），不填写则信息默认为上线状态。</span>
+        </el-form-item>
+        <el-form-item>
+            <label slot="label">
+                到期日期
+                <el-checkbox v-model="formSelected.__expireDate"></el-checkbox>
+            </label>
+            <el-date-picker v-model="formData.ExpireDate" type="date" value-format="yyyy-MM-dd" placeholder="请选择日期"></el-date-picker>
+            <span class="help-block">当前日期大于所设置的过期日期后，信息将自动到期（isExpire字段值更新为1），不填写则不进行任何处理。</span>
+        </el-form-item>
+        <el-form-item>
+            <label slot="label">
+                信息页模版
+                <el-checkbox v-model="formSelected._template_set_templateDetail"></el-checkbox>
+            </label>
+            <el-input placeholder="信息页模板文件" v-model="formData.TemplateDetail">
+                <template slot="append">
+                    <el-button v-on:click="dialog({title:'选择内容页模板',url:'@Url.ActionUrl("Select","TemplateManager")?setData=parent.vue.formData.TemplateDetail',width:'600px',height:'90%',target:'self'})">选择</el-button>
+                </template>
+            </el-input>
+            <span class="help-block">不填写则继承栏目设置中的内容页模板</span>
+        </el-form-item>
+        <el-form-item>
+            <label slot="label">
+                自定义文件名
+                <el-checkbox v-model="formSelected._url_set_ZdyPath"></el-checkbox>
+            </label>
+            <el-input v-model="formData.ZdyPath" maxlength="50"></el-input>
+            <span class="help-block">不能填写纯数字，留空则采用Id作为文件名。</span>
+        </el-form-item>
+        <el-form-item>
+            <label slot="label">
+                自定义链接
+                <el-checkbox v-model="formSelected._url_set_ZdyUrl"></el-checkbox>
+            </label>
+            <el-input v-model="formData.ZdyUrl" maxlength="150"></el-input>
+            <el-input style="display:none;" v-model="formData.Ids" v-validate="{data:formData.Ids,dataType:'*',nullMsg:'请选择要设置的信息！'}"></el-input>
+            <span class="help-block">留空则系统默认</span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:150px">
+        <el-button type="primary" v-on:click="postSubmit">提交保存</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    //绑定数据
+    var ids = "@Request.QueryString["ids"]";
+    var tableId =@(StringHelper.Format<int>(Request.QueryString["tableId"]));
+    var formData = { Ids: ids, ColumnId: 0, IsGood: 0, IsHot: 0, IsTop: 0, Clicks: "", Tags: "", OnlineDate: "", ExpireDate: "", TemplateDetail: "", ZdyPath: "", ZdyUrl: "" };
+    var formSelected = { _columnId: false, _isGood: false, _isHot: false, _isTop: false, _clicks: false, _tags: false, __onlineDate: false, __expireDate: false, _template_set_templateDetail: false, _url_set_ZdyPath: false, _url_set_ZdyUrl: false, }
+    var columnList =@Html.Raw(Html.GetTreeJson("pa_column", "name", "", "xuhao asc"));
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            formData: formData,
+            formSelected: formSelected
+        },
+        methods: {
+            postSubmit: function () {
+                var _this = this;
+                var newFormData = JSON.parse(JSON.stringify(formData));
+                for (var key in _this.formSelected) {
+                    var value = _this.formSelected[key];
+                    if (value == true) {
+                        eval("newFormData." + key + "=" + value);
+                    }
+                }
+                var validated =this.validateForm({});//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: newFormData, success: function () { callBack() } });
+                }
+            }
+        },
+    });
+    function callBack() {
+        parent.loadData();
+        closeSelf();
+    }
+</script>

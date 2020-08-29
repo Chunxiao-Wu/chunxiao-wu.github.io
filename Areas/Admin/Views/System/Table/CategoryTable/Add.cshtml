@@ -1,0 +1,57 @@
+﻿<div class="main" id="main">
+    <el-form ref="form" label-width="150px" label-position="left">
+        <el-form-item label="表名">
+            <el-input v-model="Name" maxlength="30" :disabled="Id>0" v-validate="{data:Name,dataType:'table',nullMsg:'请填写表名!'}">
+                <el-button slot="append" v-if="Id>0" v-on:click="dialog({title:'修改表名',url:'@Url.ActionUrl("ModifyName")?id=@Request.QueryString["id"]',width:'600px',height:'300px',target:'self'})">修改表名</el-button>
+            </el-input>
+            <span class="help-block validate-tips-box">为避免和其它表冲突，分类表名建议用category_作为前缀</span>
+        </el-form-item>
+        <el-form-item label="标识">
+            <el-input v-model="Remark" placeholder="仅用于标识，如xx分类表" maxlength="50" v-validate="{data:Remark,dataType:'*',nullMsg:'请填写标识！'}"></el-input>
+            <span class="help-block validate-tips-box">AccessKeySecret用于对webapi参数进行签名加密</span>
+        </el-form-item>
+        <el-form-item label="删除保护">
+            <el-switch v-model="DeleteProtect" active-text="启用" :active-value="1" :inactive-value="0"></el-switch>
+            <span class="help-block validate-tips-box">启用后列表页不能直接删除</span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    //绑定数据
+    var id = request("id");
+    var formData = { Id: 0, Name: "category_", Remark: "", DeleteProtect: 1, Uid:@(ViewBag.Uid) };
+    if (id!= "")
+    {
+       formData = @Html.Raw(Model ?? "{}");
+    }
+    var vue = new Vue({
+        el: "#main",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                if (formData.Name == "category_") {
+                    this.$message({
+                        message: "请填写好完整的表名！",
+                        type: 'error',
+                        showClose: true
+                    });
+                    return false;
+                }
+                var validated = this.validateForm({ tipsStyle: 1 });//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, success: "PostBack()"});
+                }
+            }
+        },
+    });
+    function PostBack() {
+        if (id == "") {
+            location.href = location.href;
+        }
+        parent.loadData();
+    }
+</script>

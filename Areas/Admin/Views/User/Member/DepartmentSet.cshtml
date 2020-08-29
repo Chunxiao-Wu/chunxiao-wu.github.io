@@ -1,0 +1,39 @@
+﻿@model string
+<div class="main no-padding no-border" id="main">
+    <el-form ref="form" label-width="130px" label-position="top">
+        <el-form-item label="">
+            <el-cascader-panel v-model="formData.setValue" :options="dataList"></el-cascader-panel>
+            <span class="help-block validate-tips-box">请选择设置的部门！</span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    var ids = request("ids");
+        var formData = { setValue: 0, setField: "departmentId", ids: ids };
+        var departmentList =@Html.Raw(Html.GetTreeJson("pa_department", "name", "", "xuhao asc"));
+        departmentList.unshift({ value: 0, label: "无部门", Id: 0 });
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            formData: formData,
+            dataList: departmentList
+        },
+        methods: {
+            postSubmit: function () {
+                if (Array.isArray(formData.setValue)) {
+                    formData.setValue = formData.setValue[formData.setValue.length - 1]
+                }
+                this.submit({
+                    url: "@Url.ActionUrl("SetField", "CommonMethod")?table=pa_member", data: formData, success: function () {
+                        parent.loadData();
+                        closeSelf()
+                    }
+                });
+            },
+        }
+    })
+</script>

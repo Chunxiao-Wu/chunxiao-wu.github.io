@@ -1,0 +1,48 @@
+﻿@{ 
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PageAdmin上传界面</title>
+    <link rel="stylesheet" type="text/css" href="/Incs/webuploader/webuploader.css">
+    <link rel="stylesheet" type="text/css" href="/Incs/webuploader/style.css">
+    <script type="text/javascript" src="/Js/jquery.min.js"></script>
+    <script type="text/javascript" src="/Js/basic.js"></script>
+    <script type="text/javascript" src="/Incs/layer/layer.js"></script>
+    <script type="text/javascript" src="/Incs/webuploader/webuploader.js"></script>
+</head>
+<body>
+    <div id="uploader" class="wu-example">
+        <div class="queueList">
+            <div id="dndArea" class="placeholder">
+                <div id="filePicker"></div>
+                <p id="uploadRemark">可以将文件拖到这里进行上传</p>
+            </div>
+        </div>
+        <div class="statusBar" style="display: none;">
+            <div class="progress">
+                <span class="text">0%</span>
+                <span class="percentage"></span>
+            </div>
+            <div class="info"></div>
+            <div class="btns">
+                <div id="filePicker2"></div>
+                <div class="uploadBtn">开始上传</div>
+            </div>
+        </div>
+        @Html.AntiForgeryToken()
+    </div>
+    <script type="text/javascript">
+        //下面三个变量名称不能修改
+        var BASE_URL = "/Incs/webuploader/"; //webuploader目录
+        var serverUploadUrl = "/E/UploadPanel/"; //服务器上传文件的请求路径。
+        var serverMergeUrl = "/E/UploadPanel/Merge/"; //大文件的合并请求路径
+        var parentObjName = "@Server.HtmlEncode(Request.QueryString["objName"])";
+    </script>
+    <script type="text/javascript" src="/Incs/webuploader/upload.js"></script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+﻿<script type="text/javascript" src="/incs/jquery/jquery3.3.1.min.js"></script>
+<!-- 主题文件 -->
+<link rel="stylesheet" href="/incs/codemirror/theme/3024-night.css">
+<!-- 引入CodeMirror核心文件 -->
+<link href="/incs/codemirror/lib/codemirror.css" rel="stylesheet" type="text/css">
+<link href="/incs/codemirror/addon/display/fullscreen.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/incs/codemirror/lib/codemirror.js"></script>
+
+<!-- 因为HTML混合语言依赖Javascript、XML、CSS语言支持，所以都要引入 -->
+<script type="text/javascript" src="/incs/codemirror/mode/javascript/javascript.js"></script>
+<script type="text/javascript" src="/incs/codemirror/mode/xml/xml.js"></script>
+<script type="text/javascript" src="/incs/codemirror/mode/css/css.js"></script>
+<script type="text/javascript" src="/incs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+
+<!--groovy代码高亮-->
+<script src="codemirror-5.31.0/mode/groovy/groovy.js"></script>
+
+<!-- 下面分别为显示行数、括号匹配和全屏插件 -->
+<script type="text/javascript" src="/incs/codemirror/addon/selection/active-line.js"></script>
+<script type="text/javascript" src="/incs/codemirror/addon/edit/matchbrackets.js"></script>
+<script type="text/javascript" src="/incs/codemirror/addon/display/fullscreen.js"></script>
+<style>
+    .CodeMirror {
+        border: 1px solid #999;
+        font-size: 14px;
+        line-height:1.5;
+    }
+</style>
+<div class="main" id="main">
+    <div class="controls" style="padding-bottom:10px">
+        <span>
+            文件名：@ViewBag.Name
+            &nbsp;&nbsp;
+            编辑背景：
+        </span><input type="checkbox" id="EditorBgBtn" /><span>黑色</span>
+    </div>
+    <el-form label-position="left" label-width="100px" size="small">
+        <div class="controls">
+            <textarea id="content" name="content">@ViewBag.Content</textarea>
+        </div>
+    </el-form>
+    <div class="footer-submit-bar" id="vueBox">
+        <el-button type="primary" v-on:click="postSubmit">提交保存</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    var notRead = "@ViewBag.NotRead";
+    var formData = { name: "@Request.QueryString["name"]", path: "@Request.QueryString["path"]", content: "" };
+
+    var winHeight = $(window).height();
+    if (notRead == "true") {
+        $("#content").val("您好，此文件格式被禁止编辑！");
+        $("#btnPost").attr("disabled", "disabled");
+    }
+    var mixedMode = {
+        name: "htmlmixed",
+        scriptTypes: [{
+            matches: /\/x-handlebars-template|\/x-mustache/i,
+            mode: null
+        },
+        {
+            matches: /(text|application)\/(x-)?vb(a|script)/i,
+            mode: "vbscript"
+        },
+        {
+            matches: /(text|application)\/(x-)?vb(a|script)/i,
+            mode: "vbscript"
+        }]
+    };
+    var editor = CodeMirror.fromTextArea(document.getElementById("content"), {
+        mode: mixedMode,
+        lineNumbers: true,     // 显示行数
+        selectionPointer: true, //选择指针
+        indentUnit: 4,         // 缩进单位为4
+        styleActiveLine: true, // 当前行背景高亮
+        matchBrackets: true,   // 括号匹配
+        mode: 'htmlmixed',     // HMTL混合模式
+        lineWrapping: false,    // 自动换行
+    });
+    editor.setOption("extraKeys", {
+        // Tab键换成4个空格
+        Tab: function (cm) {
+            var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
+            cm.replaceSelection(spaces);
+        },
+        // F11键切换全屏
+        "F11": function (cm) {
+            cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+        },
+        // Esc键退出全屏
+        "Esc": function (cm) {
+            if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+        }
+    });
+    editor.setSize('100%', (winHeight - 130) + "px");
+    var $editorBgBtn = $("#EditorBgBtn");
+    var codeEditorBg = getLocalStorage("CodeEditorBg");
+    function SetTheme() {
+        var $this = $editorBgBtn;
+        if ($this.prop("checked")) {
+            editor.setOption("theme", "3024-night");
+            setLocalStorage("CodeEditorBg", "black");
+        }
+        else {
+            editor.setOption("theme", "default");
+            setLocalStorage("CodeEditorBg", "default");
+        }
+    }
+    $editorBgBtn.on("click", function () {
+        SetTheme();
+    });
+    if (codeEditorBg == "black") {
+        $editorBgBtn.prop("checked", true);
+        SetTheme();
+    }
+
+    function setValue() {
+        formData.content = editor.getValue();
+    }
+
+    var vue = new Vue({
+            el: "#vueBox",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                if (notRead=="true")
+                {
+                    Alert("此文件格式被禁止编辑！")
+                    return;
+                }
+                var validated = this.validateForm({ tipsStyle: 1 });//jquery表单验证
+                if (validated)
+                {
+                    this.submit({
+                        url: "@Url.ActionUrl()", data: formData, beforeExecute: function(){setValue();},callback:""});
+                }
+            }
+        },
+    });
+</script>

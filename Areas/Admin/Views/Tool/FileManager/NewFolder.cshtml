@@ -1,0 +1,29 @@
+﻿@model string
+<div class="main">
+
+    <form class=" form-group-sm form ui-validForm" method="post">
+        <div class="form-group">
+            <label class="control-label">文件路径</label>
+            <div class="controls">
+                <input type="text" id="path" name="path" value="@ViewBag.Path" disabled class="form-control" style="width:200px;" />
+                <span class="help-block"></span>
+            </div>
+        </div>
+        <div class="form-group top_menu_only">
+            <label class="control-label" for="content">文件夹名称</label>
+            <div class="controls">
+                <input id="name" name="name" style="width:90%;" class="form-control" data-validate="dataType:'*',nullMsg:'请填写文件夹名！'" />
+                <span class="help-block"></span>
+            </div>
+        </div>
+        <div class="submit-footerbar">
+            <label class="control-label"></label>
+            <div class="controls">
+                <input type="hidden" id="filePath" name="filePath" value="@ViewBag.Path" class="form-control" />
+                <button type="button" class="btn  btn-primary ui-pagePost" data-custom-params="url:'@Url.ActionUrl("NewFolder")',callBack:'PostCloseRefreshBack'">提交</button>
+                <button type="button" class="btn  btn-default ui-closeDialog">关闭</button>
+                <span class="help-block"></span>
+            </div>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,57 @@
+﻿<div class="main" id="main">
+    <el-form label-position="left" label-width="100px">
+        <el-form-item label="表名">
+            <el-input type="text" maxlength="50" name="name" id="name" v-model="Name" v-bind:readonly="action=='edit'" v-validate="{data:Name,dataType:'string',nullMsg:'请填写表名！',errorMsg:'表名格式错误！'}"></el-input>
+            <span class="help-block">系统表必须填写已经存在的表。</span>
+        </el-form-item>
+        <el-form-item label="标识">
+            <el-input placeholder="仅用于标识" v-model="Remark" maxlength="50" v-validate="{data:Remark,dataType:'*',nullMsg:'请填写标识！'}"></el-input>
+            <span class="help-block"></span>
+        </el-form-item>
+        <el-form-item label="字段扩展">
+            <el-checkbox name="canExpand" true-label="1" false-label="0" v-model="CanExpand">可添加自定义字段</el-checkbox>
+            <span class="help-block">如果视图页面没有预先添加自定义字段的表单，非开发人员请勿修改。</span>
+        </el-form-item>
+
+        <el-form-item label="删除保护">
+            <el-checkbox name="DeleteProtect" true-label="1" false-label="0" v-model="DeleteProtect">启用</el-checkbox>
+            <span class="help-block">启用后列表页不能直接删除</span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交保存</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    //绑定数据
+    var table = request("table");
+    var formData = {Name: "", Remark: "", CanExpand:"0", DeleteProtect:"1",action:"add"};
+    if (table!= "")
+    {
+        formData = @Html.Raw(Model ?? "{}");
+        formData.action = "edit";
+    }
+    var vue = new Vue({
+        el: "#main",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({});//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, success: function (data) { postBack() } });
+                }
+            }
+        },
+    });
+
+    function postBack()
+    {
+        parent.loadData();
+        if (table == "")
+        {
+            location.href = location.href;
+        }
+    }
+</script>

@@ -1,0 +1,78 @@
+﻿<style>
+.tagList .tag{float:left;margin-right:10px;margin-bottom:10px;padding:2px 10px;cursor:pointer;border:1px solid #cccccc; border-radius:4px;color:#999}
+ .tagList .tag::before {content: ''; font-family: FontAwesome }
+ .tagList .selected{color:#333}
+.tagList .selected::before { content: '\f046'; font-family: FontAwesome;}
+</style>
+<div class="main">
+    <div class="container" style="padding-bottom:5px;border-bottom:1px solid #efefef">
+            <div class="row">
+                <div class="col-xs-8" style="padding-top:10px">
+                    <h5>点击选择标签</h5>
+                </div>
+                <div class="input-group input-group-sm col-xs-4 pull-right">
+                    <input type="text" name="name" id="name" placeholder="搜索" class="form-control ui-queryString" />
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default ui-queryString-search display-inline">搜索</button>
+                    </span>
+                </div>
+            </div>
+    </div>
+
+    <div class="container">
+        <ul class="tagList clearfix" id="tb_list"  style="padding:30px 0px">
+            <li class="item list-template-item tag">{name}</li>
+        </ul>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var objName = Request("objname");
+    var $parentObj = parent.$(objName);
+    if ($parentObj.length < 0)
+    {
+        alert("无效的objname");
+    }
+    function LoadedInit() {
+        init();
+    }
+
+    function loadData() {
+        var ajaxUrl = "@Url.ActionUrl("PageListData")?_isload=1&tableId=@Model"
+        $("#tb_list").ListBind({url:ajaxUrl,callback: "LoadedInit",pageSize:50 });
+    }
+    loadData();
+    var selectedTag = $parentObj.val();
+    var arrayTags = selectedTag.split(",");
+    arrayTags.Remove("");
+    var selctClassName = "selected";
+    function init()
+    {
+        var $tag = $(".tag");
+        $tag.each(function () {
+            var $this = $(this);
+            var thisTag = $this.text();
+            if (arrayTags.Contains(thisTag))
+            {
+                $this.addClass("selected");
+            }
+            else
+            {
+                $this.removeClass("selected");
+            }
+        });
+    }
+    $(document).on("click", ".tag", function () {
+        var $this = $(this);
+        var thisTag = $this.text();
+        if ($this.hasClass(selctClassName)) {
+            $this.removeClass(selctClassName);
+            arrayTags.Remove(thisTag);
+        } else {
+            $this.addClass(selctClassName);
+            arrayTags.push(thisTag);
+        }
+        $parentObj.val(arrayTags.join())
+    });
+
+</script>

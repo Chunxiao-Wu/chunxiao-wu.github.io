@@ -1,0 +1,133 @@
+﻿@using PageAdmin.Utils;
+@{
+    string lastTime = null, lastIp = null, logins = null;
+    dynamic userData = ViewBag.CurrentUserData;
+    if (userData != null)
+    {
+        lastTime = userData.LastDate.ToString("yyyy-MM-dd HH:mm:ss");
+        lastIp = userData.LastIp.ToString();
+        logins = userData.Logins.ToString();
+    }
+    CurrentUser user = (CurrentUser)ViewBag.CurrentUser;
+    int bindEmailState = (int)ViewBag.EmailBindState;
+    int bindMobileState = (int)ViewBag.MobileBindState;
+    string securityLevel = "低";
+    if (bindEmailState == 1 && bindMobileState == 1)
+    {
+        securityLevel = "高";
+    }
+    else if (bindEmailState == 1 || bindMobileState == 1)
+    {
+        securityLevel = "中";
+    }
+
+}
+<link rel="stylesheet" href="~/Areas/Member/Css/Home.css" type="text/css">
+<style>
+    .table tbody tr:hover > td {background-color:white;}
+</style>
+<div class="main clearfix" id="main">
+    <div class="account-info clearfix">
+        <div class="account-left"><i class="fa fa-user-circle"></i></div>
+        <div class="account-body">
+            <h4>
+                欢迎您，@(user.UserName)
+                @if (ViewBag.CanModifyUsername == "1")
+                {<a href="@Url.ActionUrl("ModifyUsername","MyLogin")"><i class="fa fa-pencil-square-o" title="修改用户名"></i></a>}
+                <small>&nbsp;&nbsp;&nbsp;&nbsp;用户组：@ViewBag.MemberGroupName </small>
+                @if (!string.IsNullOrEmpty(ViewBag.DepartmentName))
+                {<small>&nbsp; &nbsp; &nbsp; 部门：@ViewBag.DepartmentName </small>}
+            </h4>
+            <p>
+                这是您第 @logins 次登录，上次登录日期：@lastTime，登录Ip:@lastIp
+            </p>
+            <p class="security">
+                <i class="fa fa-shield fa-lg"></i><span>安全等级：@securityLevel</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <i class="fa fa-envelope fa-lg @(bindEmailState==1?"":"no-bind")"></i><span>@(bindEmailState == 1 ? "已绑定" : "未绑定")</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <i class="fa fa-mobile-phone fa-lg fa-2 @(bindMobileState==1?"":"no-bind")"></i><span>@(bindMobileState == 1 ? "已绑定" : "未绑定")</span>
+            </p>
+
+        </div>
+    </div>
+
+    <div class="panel" v-if="dataList.length>0">
+        <div class="panel-heading clearfix">
+            <span class="left">网站公告</span>
+        </div>
+        <div class="panel-body list-body">
+            <ul id="noticeList" class="title-list">
+                <li class="item clearfix" v-for="item in dataList">
+                    <a class="title" :href="item.Url" target="_blank"><i class="fa fa-angle-right" aria-hidden="true"></i> {{item.Title}} <span class="date">/ {{item.Thedate}}</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="panel security-info">
+        <div class="panel-heading">账户安全</div>
+        <div class="panel-body">
+            <table class="table">
+                <tr>
+                    <td align="center" width="10%">
+                        <i class="fa fa-check"></i>
+                    </td>
+                    <td><strong>登录密码</strong></td>
+                    <td width="40%">安全性高的密码可以使帐号更安全,建议您定期更换密码。</td>
+                    <td align="center">已设置</td>
+                    <td align="center"><a href="@Url.Action("ModifyPassword","MyLogin",new { area = "member" })" class="text-blue">修改密码</a></td>
+                </tr>
+                <tr>
+                    <td align="center" width="10%">
+                        <i class="fa @(bindEmailState==1?"fa-check":"fa-close")"></i>
+                    </td>
+                    <td><strong>邮箱绑定</strong></td>
+                    <td width="40%">邮箱将是您的最基本账户资料，在保证安全的同时还可以使用邮箱登录。</td>
+                    <td align="center">@(bindEmailState == 1 ? "已绑定" : "未绑定")</td>
+                    <td align="center">
+                        <a href="@Url.Action("EmailBind","MyLogin",new { area = "member" })">
+                            <el-button type="primary" size="small">
+                                @(bindEmailState == 1 ? "修改绑定" : "立即绑定")
+                            </el-button>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" width="10%">
+                        <i class="fa @(bindMobileState==1?"fa-check":"fa-close")"></i>
+                    </td>
+                    <td><strong>手机绑定</strong></td>
+                    <td width="40%">绑定手机后，您的手机号可以直接用于登录、找回密码等。</td>
+                    <td align="center">@(bindMobileState == 1 ? "已绑定" : "未绑定")</td>
+                    <td align="center">
+                        <a href="@Url.Action("MobileBind","MyLogin",new { area = "member" })">
+                            <el-button type="primary" size="small">
+                                @(bindMobileState == 1 ? "修改绑定" : "立即绑定")
+                            </el-button>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            dataList: [],
+        },
+        methods: {
+        }
+    });
+    function loadData() {
+        vue.ajax({
+            url: "@Url.ActionUrl("GetWebNotice")",
+            data: { number: 6},
+            success: function (data) {
+                vue.dataList = data
+            }
+        });
+    }
+    loadData();
+</script>

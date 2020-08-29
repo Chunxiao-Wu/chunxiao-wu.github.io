@@ -1,0 +1,297 @@
+﻿@using PageAdmin.Utils
+@{
+    dynamic permissionsSet = ViewBag.PermissionsSet;
+    string State = Request.QueryString["state"];
+    CurrentUser user = ViewBag.CurrentUser;
+    string table = ViewBag.Table;
+    IEnumerable<dynamic> fieldData = Html.GetFieldList(table, "list", user);
+    IEnumerable<dynamic> allfieldListData = Html.GetFieldList(table, "", user);
+    int tableId = ViewBag.TableId;
+}
+<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i>@ViewBag.CurrentSiteName</el-breadcrumb-item>
+            <el-breadcrumb-item>@ViewBag.TableRemark</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+
+    <template>
+        <el-tabs type="card" v-model="searchInfo.state" v-on:tab-click="tabClick">
+            <el-tab-pane label="全部" name="all"></el-tab-pane>
+            <el-tab-pane label="已审核" name="1"></el-tab-pane>
+            <el-tab-pane label="待审核" name="0"></el-tab-pane>
+            <el-tab-pane label="已退回" name="-1"></el-tab-pane>
+            <el-tab-pane label="草稿" name="-2"></el-tab-pane>
+        </el-tabs>
+    </template>
+
+    <div class="menu-bar-box">
+        <table border=0 cellpadding=0 cellspacing=0 class="tb-head form-inline form-group-sm">
+            <tr>
+                <td>
+                    <el-tooltip class="item" effect="dark" content="添加信息" placement="bottom-start">
+                        <el-button size="small" v-on:click="dialog({title:'添加',url:'@Url.ActionUrl("add")?table=@ViewBag.Table',width:'95%',height:'95%',target:'self',shadeClose:false})">添加</el-button>
+                    </el-tooltip>
+
+                    <el-dropdown>
+                        <el-button size="small">
+                            功能菜单<i class="el-icon-arrow-down el-icon--right"></i>
+                        </el-button>
+                        <el-dropdown-menu slot="dropdown">
+                            @if (permissionsSet.ListCanChangeState == "1")
+                            {
+                                <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("SetField","CommonMethod")?table=@table',data:{ids:getSelectedPropertys(selectList,'Id'),setField:'State',setValue:1},success:function(){loadData()},beforeExecute:function(){return checkSelectedItems(selectList)},})">审核</a></el-dropdown-item>
+                                <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("SetField","CommonMethod")?table=@table',data:{ids:getSelectedPropertys(selectList,'Id'),setField:'State',setValue:0},success:function(){loadData()},beforeExecute:function(){return checkSelectedItems(selectList)},})">取消审核</a></el-dropdown-item>
+                                <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("SetField","CommonMethod")?table=@table',data:{ids:getSelectedPropertys(selectList,'Id'),setField:'State',setValue:-1},success:function(){loadData()},beforeExecute:function(){return checkSelectedItems(selectList)},})">退稿</a></el-dropdown-item>
+                                <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("SetField","CommonMethod")?table=@table',data:{ids:getSelectedPropertys(selectList,'Id'),setField:'State',setValue:-2},success:function(){loadData()},beforeExecute:function(){return checkSelectedItems(selectList)},})">转为草稿</a></el-dropdown-item>
+                            }
+                            @if (permissionsSet.ListCanPush == "1")
+                            {
+                                <el-dropdown-item class="divider"></el-dropdown-item>
+                                <el-dropdown-item>
+                                    <a href="javascript:void(0)" class="ui-setMultiple" v-on:click="dialog({title:'信息推送',url:'@Url.ActionUrl("PushData")?table=@(ViewBag.Table)&tableId=@(tableId)&ids='+getSelectedPropertys(selectList,'Id'),width:'90%',height:'95%',target:'self',beforeExecute:function(){return checkSelectedItems(selectList)}})">信息推送</a>
+                                </el-dropdown-item>
+                            }
+                            @if (permissionsSet.ListCanPset == "1")
+                            {
+                                <el-dropdown-item class="divider"></el-dropdown-item>
+                                <el-dropdown-item><a href="javascript:void(0)" class="ui-setMultiple" v-on:click="dialog({title:'批设属性',url:'@Url.ActionUrl("SetMultiple")?table=@(ViewBag.Table)&ids='+getSelectedPropertys(selectList,'Id'),width:'90%',height:'95%',target:'self',beforeExecute:function(){return checkSelectedItems(selectList)}})">批设属性</a></el-dropdown-item>
+                            }
+                            <el-dropdown-item class="divider"></el-dropdown-item>
+                            <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("Delete")?table=@(ViewBag.Table)',data:{Id:getSelectedPropertys(selectList,'Id')},confirmMsg:'确定删除吗？',success:function(){loadData()},successMsg:'删除成功',beforeExecute:function(){return checkSelectedItems(selectList)},})">删除</a></el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </td>
+                <td align="right">
+                    <ui-cascader size="small" v-model="searchInfo.columnId" placeholder="请选择栏目" :options="@Html.GetColumnTreeJson(tableId,user)" :props="{ expandTrigger: 'hover',multiple:false,checkStrictly:true }">
+                    </ui-cascader>
+                    <el-select size="small" placeholder="根据属性选择" v-model="searchInfo.searchAttr" clearable v-on:change="loadData">
+                        <el-option value="isGood" label="推荐"></el-option>
+                        <el-option value="isHot" label="热门"></el-option>
+                        <el-option value="isTop" label="置顶"></el-option>
+                        <el-option value="notOnline" label="待上线"></el-option>
+                        <el-option value="isExpire" label="已到期"></el-option>
+                        <el-option value="hasThumbnail" label="带缩略图"></el-option>
+                        <el-option value="noColumn" label="未分类信息"></el-option>
+                        <el-option value="publishFromAdmin" label="后台投稿"></el-option>
+                        <el-option value="publishFromMember" label="会员中心投稿"></el-option>
+                        <el-option value="publishFromGuest" label="前台页面投稿"></el-option>
+                    </el-select>
+                    <el-select size="small" placeholder="选择排序方式" v-model="searchInfo.orderBy" clearable v-on:change="loadData">
+                        <el-option value="id desc" label="按id↓"></el-option>
+                        <el-option value="id asc" label="按id↑"></el-option>
+                        @foreach (var item in allfieldListData.Where(c => c.OrderItem == 1))
+                        {
+                            <el-option value="@(item.Name) desc" label="按@(item.Remark)↓"></el-option>
+                            <el-option value="@(item.Name) asc" label="按@(item.Remark)↑"></el-option>
+                        }
+                        <el-option value="clicks asc" label="按点击↑"></el-option>
+                        <el-option value="clicks desc" label="按点击↓"></el-option>
+                    </el-select>
+                    <el-select size="small" placeholder="选择搜索字段" v-model="searchInfo.searchField">
+                        @foreach (var item in allfieldListData.Where(c => c.SearchType != ""))
+                        {
+                            <el-option value="@(item.Name)" label="按@(item.Remark)搜索"></el-option>
+                        }
+                        <el-option value="username" label="按用户名搜索"></el-option>
+                    </el-select>
+                    <el-input v-if="!isDatetime" size="small" style="width:150px;" placeholder="搜索关键词" v-model="searchInfo.searchKeyword"></el-input>
+                    <el-date-picker  v-if="isDatetime" size="small" v-model="searchInfo.searchKeyword" type="daterange" value-format="yyyy-MM-dd HH:mm:ss" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+                    <el-button size="small" v-on:click="loadData">搜索</el-button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <el-table :data="dataList" row-key="Id" tooltip-effect="dark" border highlight-current-row style="width:100%" v-on:selection-change="handleSelectionChange">
+        <el-table-column type="selection" align="center" width="40"> </el-table-column>
+        @foreach (var item in fieldData)
+        {
+            int fieldId = item.Id;
+            //int listWords =StringHelper.Format<int>(item.ListWords);
+            string remark = item.Remark;
+            string field = StringHelper.FirstCharUpper(item.Name);
+            string fieldType = item.FieldType;
+            string valueType = item.ValueType;
+            string width = item.ListWidth;
+            if (!string.IsNullOrEmpty(width))
+            {
+                width = " width=\"" + width + "\" ";
+            }
+            string align = "center";
+            if (valueType == "nvarchar" || valueType == "text")
+            {
+                if (fieldType != "image" && fieldType != "file")
+                {
+                    align = "left";
+                }
+            }
+            <el-table-column align="@align" label="@remark" @Html.Raw(width) :show-overflow-tooltip="true" @Html.Raw(field == "Title"?"class-name=\"fa-eye-hover\"":"")>
+                <template slot-scope="scope">
+                    @if (new string[] { "images", "files"}.Contains(fieldType))
+                    {
+                       <span>-</span>
+                    }
+                    else if (new string[] {"subtable" }.Contains(fieldType))
+                    {
+                        string subTableType = item.SubTableType;
+                        string bt_text = StringHelper.Format<string>(item.BtText);
+                        string win_width = StringHelper.Format<string>(item.WinWidth);
+                        string win_height = StringHelper.Format<string>(item.WinHeight);
+                       <span>
+                           <el-button size="small" v-on:click="dialog({title:'@(remark)',url:'/E/SubData/@(subTableType=="multiple"?"":"Set")?parentId='+scope.row.Id+'&fieldId=@fieldId',width:'@win_width',height:'@win_height',target:'self'})">@(bt_text)</el-button>
+                       </span>
+                    }
+                    else if (fieldType == "image")
+                    {
+                        <a :href="scope.row.@field" target="_blank" v-show="scope.row.@field!=''"><img :src="scope.row.@field" class="thumbnail" /></a>
+                    }
+                    else if (fieldType == "file")
+                    {
+                        <a :href="scope.row.@field" target="_blank">{{scope.row.@field}}</a>
+                    }
+                    else
+                    {
+                        <span>{{scope.row.@field}}</span>
+                    }
+                    @if (field == "Title")
+                    {
+                        <a :href="'/e/preview/info?table=@(table)&id='+scope.row.Id" target="_blank" title="预览"><span class="fa fa-eye"></span></a>
+                    }
+                </template>
+            </el-table-column>
+        }
+        <el-table-column align="center" label="用户名" prop="Username" width="120" :show-overflow-tooltip="true"></el-table-column>
+        <el-table-column align="center" label="状态" width="100" :show-overflow-tooltip="true">
+            <template slot-scope="scope">
+                <el-dropdown>
+                    <span class="el-dropdown-link">
+                        <span :style="{color:getColor(scope.row.State)}">{{scope.row.State | stateName}}</span><i class="el-icon-arrow-down el-icon--right"></i>
+                    </span>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item>上线状态：{{scope.row.IsOnline==1?"已上线":"已下线"}}</el-dropdown-item>
+                        <el-dropdown-item>过期状态：{{scope.row.IsExpire==1?"已过期":"未过期"}}</el-dropdown-item>
+                        <el-dropdown-item>带缩略图：{{scope.row.HasThumbnail==1?"是":"否"}}</el-dropdown-item>
+                        <el-dropdown-item>发布来源：{{scope.row.PublishFrom==0?"后台发布":""}}{{scope.row.PublishFrom==1?"会员发布":""}}{{scope.row.PublishFrom==10?"匿名投稿":""}}</el-dropdown-item>
+                        <el-dropdown-item>推荐级别：{{scope.row.IsGood}}</el-dropdown-item>
+                        <el-dropdown-item>
+                            <span>置顶级别：{{scope.row.IsTop}}</span>
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <span>热门级别：{{scope.row.IsHot}}</span>
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <span>点击量：{{scope.row.Clicks}}</span>
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+
+            </template>
+        </el-table-column>
+
+        <el-table-column align="center" width="180" label="操作">
+            <template slot-scope="scope">
+                <el-button-group>
+                    <el-button size="small" v-on:click="dialog({title:scope.row.Title,url:'@Url.ActionUrl("Edit")?table=@ViewBag.Table&id='+scope.row.Id,width:'95%',height:'95%',target:'self',shadeClose:false})">修改</el-button>
+                    <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")?table=@ViewBag.Table',data:{id:scope.row.Id},confirmMsg:'确定删除吗？',success:function(){loadData()}})" class="btn btn-default">删除</el-button>
+                </el-button-group>
+            </template>
+        </el-table-column>
+    </el-table>
+    <ui-page-panel v-model="pageInfo" v-on:change="loadData" v-if="pageInfo.RecordCount>0"></ui-page-panel>
+ </div>
+
+        <script type="text/javascript">
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            selectList:[],
+            searchInfo: { state: "all", columnId: "",searchAttr:"",orderBy:"",searchField:"title",searchKeyword:""} ,
+            dataList: [],
+            pageInfo: { PageSize: 15, CurrentPage: 1, PageCount: 0, RecordCount: 0 },
+            allfieldListData:@Html.Raw(JsonHelper.JsonParse(allfieldListData.Where(c => c.SearchType != ""))),
+            isDatetime: false,
+        },
+        //过滤器
+        filters: {
+            stateName: function (state) {
+                var stateName = { s1: "已审", s0: "待审", s_1: "已退回", s_2: "草稿" };
+                state = state.toString().replace("-", "_");
+                return stateName["s" + state];
+            },
+        },
+        methods: {
+            handleSelectionChange: function (val) {
+                this.selectList = val;
+            },
+            preview: function (table, id) {
+                window.open("/e/preview/info?table=" + table + "&id=" + id, "_preview");
+            },
+            tabClick: function(tab, event) {
+                this.loadData();
+            },
+            getColor: function (state) {
+                var color = { s1: "#333", s0: "#E6A23C", s_1: "#F56C6C", s_2: "#999" };
+                state = state.toString().replace("-", "_");
+                return color["s" + state];
+            },
+            loadData: function () {
+                loadData();
+            }
+        },
+        //计算属性
+        computed: {},
+        watch: {
+            "searchInfo.columnId": {
+                handler: function (newTableId, oldTableId) {
+                    if (newTableId != oldTableId) {
+                        this.loadData();
+                    }
+                },
+            },
+            "searchInfo.searchField": {
+                handler: function (newData, oldData) {
+                    var _this = this;
+                    if (newData != oldData) {
+                        var includeName = false; 
+                        _this.allfieldListData.some(function (item, index) {
+                            if (item.Name == newData) {
+                                if (item.ValueType == "datetime") {
+                                    _this.isDatetime = true;
+                                } else {
+                                    _this.isDatetime = false;
+                                }
+                                includeName = true;
+                                return includeName;
+                            }
+                        });
+                        if (!includeName) {
+                            _this.isDatetime = false;
+                        }
+                        _this.searchInfo.searchKeyword = "";
+                    }
+                },
+                immediate: true,
+                deep: true
+            },
+        }
+    });
+        //加载数据
+    function loadData()
+    {
+        var serverData = extend(vue.searchInfo, vue.pageInfo);
+        vue.ajax({
+            url: "@Url.ActionUrl("PageListData")?table=@ViewBag.Table",
+            data: serverData,
+            success: function (responseData) {
+                if (responseData != "")
+                {
+                    vue.dataList = responseData.Data;
+                    vue.pageInfo = responseData.PageInfo;
+                }
+            }
+        });
+    }
+    loadData();
+        </script>

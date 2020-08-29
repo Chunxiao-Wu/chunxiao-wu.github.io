@@ -1,0 +1,71 @@
+﻿
+/*网站基础样式*/
+html{-webkit-text-size-adjust:none;width:100%;}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,th,td,p,blockquote,hr,button,article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{margin:0px;padding:0px;}
+article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block;}
+audio,canvas,video{display:inline-block;*display: inline;*zoom:1;}
+body{width:100%;height:100%;min-width:1024px;background-repeat:repeat-x;word-wrap:break-word;text-align:left;font:14px Helvetica Neue,Helvetica,PingFang SC,Tahoma,Arial,sans-serif;line-height:1.2;color:#666}
+input,select,textarea,button{font-size:100%;border-radius:0px!important;}
+table{border-collapse:collapse;border-spacing:0;}
+img{border:0;}
+li{list-style:none;*margin-left:-1px}
+.left{float:left}
+.right{float:right}
+.clear{display:block;clear:both;font-size:0px;height:0px;line-height:0px;width:0px;margin:0px;padding:0px;overflow:hidden}
+a{color:#333333;text-decoration:none;}
+a:hover{color:#333333;text-decoration:none;}
+*:focus{outline:none}
+
+.main{position:relative;height:100%;}
+.main .login-box {
+        width: 417px;
+        min-height: 450px;
+        margin: 0px auto;
+    }
+        .main .login-box .login-title {
+            margin: 0px auto;
+            font-size: 18px;
+            line-height: 30px;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+            color: #fff;
+            overflow: hidden;
+            padding-bottom:20px;
+
+        }
+    .main .login-box .login-title::after {
+        margin-top:10px;
+        display: block;
+        content: "";
+        width: 100%;
+        height: 1px;
+        margin-left:auto;
+        margin-right:auto;
+        background-color:rgba(0,0,0,.1);
+    }
+        .main .login-box form {
+            padding: 20px 50px;
+            background: url(images/login/ContentBg.png) left bottom no-repeat;
+        }
+
+.main .login-box form .el-input__inner{border-color: #efefef;border-radius:2px;height:38px;box-shadow: inset 0px 0px 0px rgba(0,0,0,0);font-size:15px}
+
+
+.main .login-box .remark a,.main .login-box .remark label{color:#fff;font-weight:100}
+ .main .login-box .header {
+            height: 25px;
+            background: url(images/login/topBg.png) left top no-repeat;
+        }
+        .main .login-box .footer {
+            height: 20px;
+            background: url(images/login/footerBg.png) left bottom no-repeat;
+        }
+.controls,.controls a {
+    color: #fff
+}
+.el-input-group__append{padding:0px 5px}
+.el-checkbox__label{color:#fff}
+.controls .el-button{display:block;width:100%}
+.copyright{line-height:40px;color:#fff;text-align:center}
+.copyright a{color:#fff;font-size:14px}
+.el-loading-mask { background-color: rgba(255,255,255,.5)}

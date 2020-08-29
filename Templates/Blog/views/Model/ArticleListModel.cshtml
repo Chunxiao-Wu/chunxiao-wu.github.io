@@ -1,0 +1,42 @@
+﻿@{
+    var dataList= Model;
+}
+<ul class="m-newslist">
+    @foreach (dynamic item in dataList)
+    {
+        string author = item.Author;
+        string url = Html.InfoDataUrl((int)item.ColumnId, (int)item.Id);
+        string thumbnail = item.Thumbnail;
+        string date = item.Thedate.ToString("yyyy-MM-dd");
+        string introduction = item.Introduction;
+        <li class="clearFix padding-top-20 padding-bottom-30 wow fadeInUp animated">
+            @if (thumbnail != "")
+            {
+                <div class="thumbnail float-left">
+                    <a href="@url">
+                        <img src="@thumbnail" />
+                    </a>
+                </div>
+            }
+            <div class="intro-box float-left">
+                <div class="tit">
+                    <a href="@url">
+                        @item.Title
+                    </a>
+                </div>
+                <div class="update-msg">
+                    <span class="date">
+                        @date
+                    </span>
+                    <span class="autor">
+                        @(author == "" ? "佚名" : author)
+                    </span>
+                    <span>阅 @item.Clicks</span>
+                </div>
+                <div class="intro">
+                    @introduction
+                </div>
+            </div>
+        </li>
+    }
+</ul>

@@ -1,0 +1,166 @@
+﻿@{
+    string enTable = "pa_field";
+}
+<div class="main" id="main">
+    <div class="menu-bar-box">
+        <table border=0>
+            <tr>
+                <td>
+                    <el-tooltip effect="dark" content="添加自定义字段" placement="bottom-start">
+                        <el-button size="small" type="button" v-on:click="dialog({title:'添加',url:'@Url.ActionUrl("Add")?table=@(ViewBag.TableName)&xuhao='+dataList.length,width:'95%',height:'95%',target:'self'})">
+                            添加
+                        </el-button>
+                    </el-tooltip>
+                </td>
+        </table>
+    </div>
+
+    <el-table ref="multipleTable" :data="dataList" row-key="Id" tooltip-effect="dark" border highlight-current-row style="width: 100%">
+        <el-table-column label="字段">
+            <template slot-scope="scope">
+                <el-dropdown>
+                    <span class="el-dropdown-link">
+                        {{scope.row.Name}}<i class="el-icon-arrow-down el-icon--right"></i>
+                    </span>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item>值类型：{{ scope.row.ValueType}}</el-dropdown-item>
+                        <el-dropdown-item>字段类型：{{scope.row.FieldType | fieleTypeName}}</el-dropdown-item>
+                        <el-dropdown-item>系统字段：{{scope.row.SysField==1?"是":"否"}}</el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+            </template>
+        </el-table-column>
+        <el-table-column align="center" prop="Remark" label="备注"></el-table-column>
+        <el-table-column align="center" label="后台发布项">
+            <el-table-column align="center" label="可添加">
+                <template slot-scope="scope">
+                    <el-checkbox :true-label="1" :false-label="0" v-model="scope.row.AdminCanAdd" v-on:change="updateItem(scope.row.Id,'AdminCanAdd',scope.row.AdminCanAdd)"></el-checkbox>
+                </template>
+            </el-table-column>
+            <el-table-column align="center" label="可编辑">
+                <template slot-scope="scope">
+                    <el-checkbox :true-label="1" :false-label="0" v-model="scope.row.AdminCanEdit" v-on:change="updateItem(scope.row.Id,'AdminCanEdit',scope.row.AdminCanEdit)"></el-checkbox>
+                </template>
+            </el-table-column>
+        </el-table-column>
+
+        <el-table-column align="center" label="会员发布项">
+            <el-table-column align="center" prop="MemberCanAdd" label="可添加">
+                <template slot-scope="scope">
+                    <el-checkbox :true-label="1" :false-label="0" v-model="scope.row.MemberCanAdd" v-on:change="updateItem(scope.row.Id,'MemberCanAdd',scope.row.MemberCanAdd)"></el-checkbox>
+                </template>
+            </el-table-column>
+            <el-table-column align="center" prop="MemberCanEdit" label="可编辑">
+                <template slot-scope="scope">
+                    <el-checkbox :true-label="1" :false-label="0" v-model="scope.row.MemberCanEdit" v-on:change="updateItem(scope.row.Id,'MemberCanEdit',scope.row.MemberCanEdit)"></el-checkbox>
+                </template>
+            </el-table-column>
+        </el-table-column>
+
+        <el-table-column align="center" prop="AnonymousCanAdd" label="匿名投稿项">
+            <template slot-scope="scope">
+                <el-checkbox :true-label="1" :false-label="0" v-model="scope.row.AnonymousCanAdd" v-on:change="updateItem(scope.row.Id,'AnonymousCanAdd',scope.row.AnonymousCanAdd)"></el-checkbox>
+            </template>
+        </el-table-column>
+
+        <el-table-column align="center" label="管理列表">
+            <el-table-column align="center" label="后台列表项">
+                <template slot-scope="scope">
+                    <el-checkbox :true-label="1" :false-label="0" v-model="scope.row.AdminListItem" v-on:change="updateItem(scope.row.Id,'AdminListItem',scope.row.AdminListItem)"></el-checkbox>
+                </template>
+            </el-table-column>
+            <el-table-column align="center" label="会员列表项">
+                <template slot-scope="scope">
+                    <el-checkbox :true-label="1" :false-label="0" v-model="scope.row.MemberListItem" v-on:change="updateItem(scope.row.Id,'MemberListItem',scope.row.MemberListItem)"></el-checkbox>
+                </template>
+            </el-table-column>
+        </el-table-column>
+
+        <el-table-column align="center" label="模板页面">
+            <el-table-column align="center" label="列表读取">
+                <template slot-scope="scope">
+                    <el-checkbox :true-label="1" :false-label="0" v-model="scope.row.ListItem" v-on:change="updateItem(scope.row.Id,'ListItem',scope.row.ListItem)"></el-checkbox>
+                </template>
+            </el-table-column>
+            <el-table-column align="center" label="内容读取">
+                <template slot-scope="scope">
+                    <el-checkbox :true-label="1" :false-label="0" v-model="scope.row.DetailItem" v-on:change="updateItem(scope.row.Id,'DetailItem',scope.row.DetailItem)"></el-checkbox>
+                </template>
+            </el-table-column>
+        </el-table-column>
+
+        <el-table-column align="center" label="序号" width="150px">
+            <template slot-scope="scope">
+                <el-input v-model="scope.row.Xuhao" size="small" style="width:120px" maxlength="4" v-on:change="updateXuhao({row:scope.row,url:'@Url.ActionUrl("UpdataListXuhao", "CommonMethod")?table=@enTable',dataList:dataList})">
+                    <template slot="prepend">
+                        <el-button v-on:click="updateXuhao({type:-1,row:scope.row,url:'@Url.ActionUrl("UpdataListXuhao", "CommonMethod")?table=@enTable',dataList:dataList})">↑</el-button>
+                    </template>
+                    <template slot="append">
+                        <el-button slot="append" v-on:click="updateXuhao({type:1,row:scope.row,url:'@Url.ActionUrl("UpdataListXuhao","CommonMethod")?table=@enTable',dataList:dataList})">↓</el-button>
+                    </template>
+                </el-input>
+            </template>
+        </el-table-column>
+
+        <el-table-column align="center" width="150px" label="管理">
+            <template slot-scope="scope">
+                <el-button-group>
+                    <el-button size="small" v-on:click="dialog({title:'字段：'+scope.row.Name,url:'@Url.ActionUrl("Edit")?id='+scope.row.Id,width:'90%',height:'90%',target:'self'})">修改</el-button>
+                    <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{id:scope.row.Id},confirmMsg:'确定删除吗？',success:function(){deleteItem(dataList,scope.row)},})" :disabled="scope.row.SysField==1">删除</el-button>
+                </el-button-group>
+            </template>
+        </el-table-column>
+    </el-table>
+
+    <div class="footer-submit-bar" style="padding-left:10px">
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var fieleTypeNames = { text: "单行文本", password: "密码文本", hidden: "隐藏域表单", cascader: "多级选择器", colorpicker: "颜色选择器", datepicker: "日期选择器", select: "下拉表单", radio: "单选框", checkbox: "复选框", textarea: "多行文本", editor: "编辑器", image: "图片", images: "图片组", file: "附件", files: "附件组", subtable: "附属表", zdy:"自定义组件" }
+        //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            searchData: {searchField:"name",searchKeyword:""},
+            dataList:[],
+        },
+        filters: {
+            fieleTypeName: function (fieldType)
+            {
+               return fieleTypeNames[fieldType];
+            },
+        },
+        methods: {
+           updateItem: function (id, field, value) {
+               var formData = { id: id, field: field, fieldValue: value };
+               vue.ajax({type:"post",url: "@Url.ActionUrl("UpdateItem")", data: formData});
+           },
+           valueTypeName: function (fieldType,valueType) {
+               if (["subtable", "files", "images"].indexOf(fieldType) >= 0) {
+                   return "/";
+               }
+               else {
+                   return valueType;
+               }
+           }
+        }
+    });
+
+    //加载数据
+    function loadData()
+    {
+        var serverData = extend({}, vue.searchData);
+        vue.ajax({
+        url:"@Url.ActionUrl("ListData")?table=@ViewBag.TableName",
+        data: serverData,
+        success: function (responseData) {
+            if (responseData!="") {
+                vue.dataList = responseData;
+            }
+            }
+        });
+    }
+    loadData();
+</script>

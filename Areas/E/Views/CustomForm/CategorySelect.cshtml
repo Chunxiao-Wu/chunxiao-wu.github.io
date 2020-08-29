@@ -1,0 +1,41 @@
+﻿
+
+@{
+    IEnumerable<dynamic> dataList = Model;
+    if (dataList != null)
+    {
+        IEnumerable<dynamic> rows = dataList.Where(c => c.SearchType != "");
+        string name, remark, searchType, valueType;
+        foreach (dynamic item in rows)
+        {
+            name =StringHelper.FirstCharUpper(item.Name);
+            remark = item.Remark;
+            searchType = item.SearchType;
+            valueType = item.ValueType;
+            byte datasourceOpen = item.DatasourceOpen;
+            string datasourceTable = item.DatasourceTable;
+            string datasourceTextField = StringHelper.FirstCharUpper(item.DatasourceTextField);
+            string datasourceTextFieldName = item.DatasourceTextFieldName;
+            byte datasourceMultiLevel = item.DatasourceMultiLevel;
+            string isTree = "false";
+            if (datasourceMultiLevel == 1)
+            {
+                isTree = "true";
+            }
+            if (datasourceOpen == 1 && datasourceTable != "" && datasourceTextField != "")
+            {
+            <text>
+                <select id="@name" name="@name" class="form-control ui-queryString"><option>@(datasourceTextFieldName)</option></select>
+
+<script type="text/javascript">
+    //填充下拉
+    var fillParams = { type: "get", async: true, url: "/E/SelectData/ListData?fieldId=@item.Id", valueField:"Id", textField: "@(datasourceTextField)",isTree:@isTree};
+    $("#@name").SelectBind(fillParams);
+</script>
+            </text>
+            }
+        }
+
+    }
+}
+

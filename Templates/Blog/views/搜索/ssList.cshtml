@@ -1,0 +1,68 @@
+﻿@{
+    int columnId = Html.CurrentColumnId();
+    PageInfo pageInfo = new PageInfo()
+    {
+        PageSize = 20,//每页显示10条数据
+        CurrentPage = (int)ViewBag.CurrentPage //当前页码，系统预设
+    };
+    string kw = StringHelper.Format<string>(HttpContext.Current.Request.QueryString["kw"]);
+}
+
+
+<div class="container mycontainer padding-top-20 clearFix">
+    <div class="rightmain-box float-left padding-right-20">
+        @Html.Partial("BreadcrumbPartial")
+        <ul class="m-newslist">
+            @foreach (var item in Html.InfoDataList(new { Table = "news" }, "title like @kw", new { kw = "%" + kw + "%" }, pageInfo))
+            {
+                string url = Html.InfoDataUrl((int)item.ColumnId, (int)item.Id);
+                string thumbnail = item.Thumbnail;
+                string date = item.Thedate.ToString("yyyy-MM-dd");
+                string introduction = item.Introduction;
+                <li class="clearFix padding-top-20 padding-bottom-30">
+                    @if (thumbnail != "")
+                    {
+                        <div class="thumbnail float-left">
+                            <a href="@url">
+                                <img src="@thumbnail" />
+                            </a>
+                        </div>
+                    }
+                    <div class="intro-box float-left">
+                        <div class="tit">
+                            <a href="@url">
+                                @item.Title
+                            </a>
+                        </div>
+                        <div class="update-msg">
+                            <span class="date">
+                                @date
+                            </span>
+                            <span class="autor">
+                                @item.Pa_author
+                            </span>
+                            <span>@item.Clicks</span>
+                        </div>
+                        <div class="intro">
+                            @introduction
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+
+    </div>
+    <div class="leftnav-box float-left">
+        @Html.Partial("leftNavPartial")
+    </div>
+    <div class="clearFix"></div>
+
+    @Html.Partial("PagebreakPartial", pageInfo)
+</div>
+
+
+
+
+
+
+

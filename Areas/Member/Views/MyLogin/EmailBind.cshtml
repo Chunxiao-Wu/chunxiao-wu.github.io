@@ -1,0 +1,51 @@
+﻿@{
+    dynamic currentUserData = ViewBag.CurrentUserData;
+    string email = currentUserData.Email;
+    int uid = currentUserData.Id;
+}
+<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i>邮箱绑定</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <el-form ref="form" label-width="130px" label-position="left">
+        <el-form-item label="绑定邮箱">
+            <el-input v-model="Email" id="email" maxlength="40" v-validate="{data:Email,dataType:'email',nullMsg:'请填写绑定的邮箱!',errorMsg:'邮箱地址填写错误'}"></el-input>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+
+        <el-form-item label="邮件验证码">
+            <ui-input-code placeholder="点击右侧按钮获取邮件验证码" focus-target="#email" v-model="EmailCode" :account="Email" url-api="/E/EmailCode/Send" v-validate="{data:EmailCode,dataType:'numeric',minLength:6,minLengthErrorMsg:'邮件验证码为6位数字！',nullMsg:'请填写邮件验证码'}"></ui-input-code>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+        <el-form-item label="">
+            <el-button size="small" type="primary" v-on:click="postSubmit">提交</el-button>
+            <el-button size="small" onclick="location.href='@Url.ActionUrl("Security")'">返回</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+<script type="text/javascript">
+    var formData = { Email: "@email", EmailCode: "",Id:@(uid),};
+    var vue = new Vue({
+        el: "#main",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({});//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, showSuccessMsg: false, success: "PostBack()" });
+                }
+            }
+        }
+    })
+    function PostBack() {
+        vue.$alert('邮箱绑定成功!', '提示', {
+            confirmButtonText: '确定',
+            type: 'success',
+            callback: function () {
+                 location.href = '@Url.ActionUrl("Security")';
+            }
+        })
+    }
+</script>

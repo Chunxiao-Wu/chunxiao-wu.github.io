@@ -1,0 +1,61 @@
+﻿@using System.Linq;
+<div class="box" id="topContainer">
+    <div class="left topmenu" id="topmenu">
+        <ul>
+            <li class="item home-item" title="会员首页"><a href="@Url.ActionUrl("Home")" target="mainContainer"><i class="fa fa-home fa-fw"></i></a></li>
+            @{
+                string homeLink = (string)ViewData["HomeLink"];
+                int maxShow = 6;
+                IEnumerable<dynamic> menuList = (IEnumerable<dynamic>)ViewData["MenuList"];
+                menuList = menuList.Where(item => item.Level == 1).OrderBy(item => item.Xuhao);
+                int rowsCount = menuList.Count();
+                int i = 0;
+                string topMenuName = "我的菜单";
+                foreach (var item in menuList)
+                {
+                    if (i == 0)
+                    {
+                        topMenuName = item.Name;
+                    }
+                    <li class="item menu-item" date-top-menu-id="@item.Id" onclick="setTopIndex(@i,'@item.Name',this)"><span>@item.Name</span></li>
+                    i++;
+                }
+            }
+        </ul>
+    </div>
+    <div class="right">
+        <el-menu class="el-menu-demo" mode="horizontal">
+            <el-menu-item index="1"><a href="@homeLink" target="_blank" title="网站首页"><span class="fa fa-globe"></span></a></el-menu-item>
+            <el-submenu index="2" popper-class="el-submenu-demo">
+                <template slot="title">
+                    <span class="fa fa-user"> 账户中心</span>
+                </template>
+                <el-menu-item><a href="@Url.ActionUrl()">会员首页</a></el-menu-item>
+                <el-menu-item><a href="javascript:void(0)" v-on:click="exit">退出登录</a></el-menu-item>
+                <el-menu-item><a href="@homeLink" target="_blank">网站首页</a></el-menu-item>
+            </el-submenu>
+        </el-menu>
+    </div>
+</div>
+<script type="text/javascript">
+    var topMenuName = "@topMenuName";
+    var topVue = new Vue({
+        el: "#topContainer",
+        data: { },
+        methods: {
+            exit:function()
+            {
+                var _this = this;
+                var loadingInstance = _this.$loading();
+                var url = "@Url.ActionUrl("Exit","Login")";
+                ajax({
+                    type: "get", async: true, url: url, success: function () {
+                        loadingInstance.close();
+                        _this.$message.success("正在退出！");
+                        location.href = "@Url.ActionUrl("Index","Login")";
+                }});
+            },
+        }
+    });
+</script>
+

@@ -1,0 +1,159 @@
+﻿@{
+    string enTable = "pa_column";
+}
+
+<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i>@ViewBag.CurrentSiteName</el-breadcrumb-item>
+            <el-breadcrumb-item>栏目管理</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="menu-bar-box">
+        <el-tooltip class="item" effect="dark" content="添加栏目" placement="bottom-start">
+            <el-button size="small" v-on:click="dialog({title:'添加栏目',url:'@Url.ActionUrl("Add")?xuhao='+dataList.length,width:'90%',height:'90%',target:'self'})">
+                添加
+            </el-button>
+        </el-tooltip>
+        <el-dropdown>
+            <el-button size="small">
+                功能菜单<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("SetField","CommonMethod")?table=@enTable',data:{ids:getSelectedPropertys(selectList,'Id'),setField:'IsFinal',setValue:0},beforeExecute:function(){return checkSelectedItems(selectList)},success:function(){loadData()},})">转为分类节点</a></el-dropdown-item>
+                <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("SetField","CommonMethod")?table=@enTable',data:{ids:getSelectedPropertys(selectList,'Id'),setField:'IsFinal',setValue:1},beforeExecute:function(){return checkSelectedItems(selectList)},success:function(){loadData()},})">转为最终栏目</a></el-dropdown-item>
+                <el-dropdown-item class="divider"></el-dropdown-item>
+                <el-dropdown-item><a href="javascript:void(0)" v-on:click="dialog({title:'批设属性',url:'@Url.ActionUrl("SetMultiple")?selectedIds='+getSelectedPropertys(selectList,'Id'),width:'800px',height:'90%',target:'self',beforeExecute:function(){return checkSelectedItems(selectList)},success:function(){loadData()}})">批设属性</a></el-dropdown-item>
+                <el-dropdown-item><a href="javascript:void(0)" v-on:click="dialog({title:'栏目转移',url:'@Url.ActionUrl("Transfer","CommonMethod")?table=@enTable&selectedIds='+getSelectedPropertys(selectList,'Id'),beforeExecute:function(){return checkSelectedItems(selectList)},width:'600px',height:'90%',target:'self'})">分类转移</a></el-dropdown-item>
+                <el-dropdown-item class="divider"></el-dropdown-item>
+                <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("clearRelativeInvalidate")'})">清理相关冗余数据</a></el-dropdown-item>
+                <el-dropdown-item><a href="javascript:void(0)" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{ids:getSelectedPropertys(selectList,'Id')},confirmMsg:'确定删除吗？',success:function(){loadData()},beforeExecute:function(){return checkSelectedItems(selectList)}})">删除</a></el-dropdown-item>
+            </el-dropdown-menu>
+        </el-dropdown>
+    </div>
+    <div class="table-list-box">
+        <template>
+            <el-table class="tree_table"  :data="dataList" default-expand-all :tree-props="{children:'Children',hasChildren: 'HasChildren'}" row-key="Id"  v-on:selection-change="handleSelectionChange" tooltip-effect="dark" border style="width: 100%">
+                <el-table-column type="selection" align="center" width="40"></el-table-column>
+                <el-table-column label="栏目" class-name="fa-eye-hover">
+                    <template slot-scope="scope">
+                        <span class="node fa fa-file-text-o" v-show="scope.row.IsFinal==1"></span>
+                        <span class="node fa" v-on:click="load(scope.row)" style="cursor:pointer;" v-bind:class="{'fa-folder':scope.row.OpenChildren==false,'fa-folder-open':scope.row.OpenChildren==true}" v-show="scope.row.IsFinal==0"></span>
+                        <span>{{scope.row.Name}}</span>
+                        <a :href="'/e/preview/column?id='+scope.row.Id" target="_blank" title="预览"><span class="fa fa-eye"></span></a>
+                    </template>
+                </el-table-column>
+                <el-table-column label="Id" prop="Id" width="100" align="center"></el-table-column>
+                <el-table-column label="类型/模型" width="200" align="center">
+                    <template slot-scope="scope">
+                        {{scope.row.ColumnType | getColumnTypeName}}
+                    </template>
+                </el-table-column>
+                <el-table-column label="显示" width="100" align="center">
+                    <template slot-scope="scope">
+                        <el-switch v-model="scope.row.Show" :active-value="1" :inactive-value="0"  v-on:change="submit({url:'@Url.ActionUrl("SetField","CommonMethod")?table=@enTable',data:{ids:scope.row.Id,setField:'Show',setValue:scope.row.Show},showSuccessMsg:false})"></el-switch>
+                    </template>
+                </el-table-column>
+                <el-table-column label="顺序" width="150" align="center">
+                    <template slot-scope="scope">
+                        <el-input v-model="scope.row.Xuhao" size="small"  v-on:change="updateXuhao({row:scope.row,url:'@Url.ActionUrl("UpdataListXuhao", "CommonMethod")?table=@enTable',dataList:dataList})" style="width:120px" maxlength="4" class="xuhao">
+                            <template slot="prepend">
+                                <el-button v-on:click="updateXuhao({type:-1,row:scope.row,url:'@Url.ActionUrl("UpdataListXuhao", "CommonMethod")?table=@enTable',dataList:dataList})">↑</el-button>
+                            </template>
+                            <template slot="append">
+                                <el-button slot="append" v-on:click="updateXuhao({type:1,row:scope.row,url:'@Url.ActionUrl("UpdataListXuhao","CommonMethod")?table=@enTable',dataList:dataList})">↓</el-button>
+                            </template>
+                        </el-input>
+                    </template>
+                </el-table-column>
+                <el-table-column label="添加子栏目" width="120" align="center">
+                    <template slot-scope="scope">
+                        <el-button-group>
+                            <el-button type="button"  size="small" v-on:click="dialog({title:scope.row.Name+'：子栏目添加',url:'@Url.ActionUrl("Add")?parentId='+scope.row.Id,width:'90%',height:'90%',target:'self'})" v-show="scope.row.IsFinal==0" title="添加子栏目">添加</el-button>
+                            <el-button type="button"  size="small" disabled v-show="scope.row.IsFinal==1">添加</el-button>
+                        </el-button-group>
+                    </template>
+                </el-table-column>
+
+                <el-table-column label="操作" width="200" align="center">
+                    <template slot-scope="scope">
+                        <el-button-group>
+                            <el-button type="button"  size="small"  v-on:click="dialog({title:'编辑',url:'@Url.ActionUrl("Edit")?id='+scope.row.Id,width:'90%',height:'90%',target:'self'})">编辑</el-button>
+                            <el-button type="button"  size="small" v-on:click="submit({url:'@Url.ActionUrl("delete")',confirmMsg:'是否确定删除？',data:{id:scope.row.Id},success:function(){deleteItem(dataList,scope.row)},})">删除</el-button>
+                        </el-button-group>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </template>
+        <div class="help-block"><span class="fa fa-info-circle"></span> 点击名称前的文件夹图标可展开子级栏目！</div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var loadUrl = "@Url.ActionUrl("ListData")";
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            selectList: [],
+            dataList: [],
+            expandKeys:[],//展开的ids
+        },
+        methods: {
+            loadData: function () {
+                loadData();
+            },
+            handleSelectionChange: function(val) {
+                this.selectList = val;
+            },
+            load: function (itemRow){
+                var vue = this;
+                var parentId = itemRow.Id;
+                if (itemRow.OpenChildren == false) {
+                    vue.expandKeys.push(parentId);
+                    itemRow.OpenChildren  = true;
+                    vue.ajax({
+                        url: loadUrl,
+                        data: { parentId: parentId},
+                        success: function (data) {
+                            if (Array.isArray(data)) {
+                                vue.$set(itemRow,"Children", data); //必须采用vue的设置方式才能进行跟踪
+                            }
+                        }
+                    });
+                } else {
+                    vue.expandKeys.remove(parentId)
+                    vue.$set(itemRow, "Children",[]);
+                    itemRow.OpenChildren = false;
+                }
+
+            },
+        },
+        filters: {
+            getColumnTypeName: function (value) {
+                value = value.toString();
+                var stateName = ["首页", "信息页", "单页面","自定义链接"];
+                if (!isInt(value)) {
+                    value = 0;
+                }
+                value = parseInt(value.toString());
+                return stateName[value];
+            },
+        },
+    });
+
+    //加载数据
+    function loadData()
+    {
+        vue.ajax({
+            url: loadUrl,
+            data: { parentId: 0, expandKeys: vue.expandKeys.join(",") },
+            success: function (data) {
+                if (Array.isArray(data)) {
+                    vue.dataList = data;
+                }
+            }
+        });
+    }
+    loadData();
+</script>

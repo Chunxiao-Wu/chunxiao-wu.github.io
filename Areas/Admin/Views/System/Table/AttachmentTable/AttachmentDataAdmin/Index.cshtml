@@ -1,0 +1,98 @@
+﻿@{ 
+    string parentTable = Request.QueryString["parentTable"];
+}
+<div class="main" id="main">
+    <template>
+        <el-tabs type="card" v-model="searchData.state" v-on:tab-click="tabClick">
+            <el-tab-pane label="使用中" name="1"></el-tab-pane>
+            <el-tab-pane label="未使用" name="0"></el-tab-pane>
+            <el-tab-pane label="已冗余" name="-1"></el-tab-pane>
+        </el-tabs>
+    </template>
+
+
+    <div class="menu-bar-box">
+        <table border=0 cellpadding=0 cellspacing=0 class="tb-head form-inline form-group-sm">
+            <tr>
+                <td>
+                    <el-button size="small" v-show="searchData.state!='1'" v-on:click="submit({url:'@Url.ActionUrl("Delete")?table=@ViewBag.Table',data:{ids:getSelectedPropertys(selectList,'Id')},confirmMsg:'确定删除吗？',success:function(){loadData()},successMsg:'删除成功',beforeExecute:function(){return checkSelectedItems(selectList)},})">删除</el-button>
+                    <el-button size="small" v-show="searchData.state=='1'" v-on:click="submit({url:'@Url.ActionUrl("SetState")?table=@ViewBag.Table',data:{ids:getSelectedPropertys(selectList,'Id'),state:-1},confirmMsg:'请确保数据已经冗余再进行此操作，是否确定？',success:function(){loadData()},successMsg:'提交成功',beforeExecute:function(){return checkSelectedItems(selectList)},})">转为冗余</el-button>
+                </td>
+                <td align="right">
+                    <el-select size="small" v-model="searchData.searchField">
+                        <el-option value="path" label="按文件名搜索"></el-option>
+                        <el-option value="username" label="按用户搜索"></el-option>
+                        <el-option value="parentField" label="按父级字段搜索"></el-option>
+                    </el-select>
+                    <el-input size="small" style="width:150px;" placeholder="搜索关键词" v-model="searchData.searchKeyword"></el-input>
+                    <el-button size="small" onclick="loadData()">确定</el-button>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+    <el-table ref="multipleTable" :data="dataList" row-key="Id" tooltip-effect="dark" border highlight-current-row style="width: 100%" v-on:selection-change="handleSelectionChange">
+        <el-table-column type="selection" align="center" width="40"> </el-table-column>
+        <el-table-column  label="文件路径" :show-overflow-tooltip="true">
+            <template slot-scope="scope">
+                <a :href="scope.row.Path" target="_blank">{{scope.row.Path}}</a>
+            </template>
+        </el-table-column>
+        <el-table-column label="父级表" width="120" :show-overflow-tooltip="true">
+            <template slot-scope="scope">
+              @parentTable
+            </template>
+        </el-table-column>
+        <el-table-column prop="ParentField" label="父级字段" width="120" :show-overflow-tooltip="true"></el-table-column>
+        <el-table-column prop="ParentId" label="父级Id" width="100" :show-overflow-tooltip="true"></el-table-column>
+        <el-table-column prop="Size" label="大小(kb)" width="120" :show-overflow-tooltip="true"></el-table-column>
+        <el-table-column prop="Username" label="用户" width="150" :show-overflow-tooltip="true"></el-table-column>
+        <el-table-column prop="Thedate" label="上传时间" width="200" :show-overflow-tooltip="true"> </el-table-column>
+    </el-table>
+    <ui-page-panel v-model="pageInfo" v-on:change="loadData" v-if="pageInfo.RecordCount>0"></ui-page-panel>
+</div>
+
+<script type="text/javascript">
+        //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            selectList:[],
+            searchData: { state:"1", thedate: "", searchField:"path",searchKeyword:""},
+            pageInfo: { PageSize: 15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+            dataList:[],
+        },
+        methods: {
+            tabClick: function (tab, event) {
+                this.loadData();
+            },
+            handleSelectionChange: function (val) {
+                this.selectList = val;
+            },
+            loadData: function () {
+                loadData();
+            }
+        }
+    });
+
+    //加载数据
+    function loadData()
+    {
+        var serverData = extend({}, vue.searchData, vue.pageInfo);
+        vue.ajax({
+        url:"@Url.ActionUrl("PageListData")?table=@ViewBag.Table",
+        data: serverData,
+        success: function (responseData) {
+            if (responseData != "") {
+                vue.dataList = responseData.Data;
+                vue.pageInfo = responseData.PageInfo;
+                vue.selectedIds = [];
+            }
+            }
+        });
+    }
+    loadData();
+</script>
+
+

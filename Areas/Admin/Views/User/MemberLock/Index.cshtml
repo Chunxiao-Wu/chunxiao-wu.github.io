@@ -1,0 +1,89 @@
+﻿@model string
+<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i>登录锁定记录</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <table border=0 cellpadding=0 cellspacing=0 class="tb-head form-inline form-group-sm">
+        <tr>
+            <td>
+                <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{Id:getSelectedPropertys(selectList,'Id')},confirmMsg:'确定删除吗？',success:reLoadData,beforeExecute:function(){return checkSelectedItems(selectList)},})">
+                    删除
+                </el-button>
+            </td>
+            <td align="right">
+                <el-select v-model="queryData.searchField" size="small">
+                    <el-option value="username" label="用户名"></el-option>
+                    <el-option value="ip" label="ip"></el-option>
+                    <el-option value="thedate" label="登录时间" valuetype="date" searchtype="range"></el-option>
+                    <el-option value="expireDate" label="过期时间" valuetype="expireDate" searchtype="range"></el-option>
+                </el-select>
+                <el-date-picker v-model="queryData.searchKeyword" v-if="queryData.searchField=='thedate' || queryData.searchField=='expireDate'"
+                                type="daterange"
+                                size="small"
+                                value-format="yyyy-MM-dd"
+                                range-separator="至"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期">
+                </el-date-picker>
+                <el-input size="small" v-model="queryData.searchKeyword" style="width:225px;" v-else placeholder="输入关键词"></el-input>
+                <el-button size="small" v-on:change="reLoadData">确定</el-button>
+            </td>
+        </tr>
+    </table>
+    <div class="table-list-box">
+        <template>
+            <el-table ref="multipleTable" :data="dataList" tooltip-effect="dark" style="width: 100%" v-on:selection-change="handleSelectionChange" border>
+                <el-table-column type="selection" width="40"> </el-table-column>
+                <el-table-column label="用户" prop="Username"></el-table-column>
+                <el-table-column prop="IP" label="IP" align="center"></el-table-column>
+                <el-table-column prop="Thedate" label="锁定时间" align="center"></el-table-column>
+                <el-table-column prop="ExpireDate" label="解锁时间" align="center"></el-table-column>
+                <el-table-column label="管理" align="center">
+                    <template slot-scope="scope">
+                        <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{id:scope.row.Id},confirmMsg:'确定删除吗？',success:reLoadData})">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </template>
+    </div>
+    <ui-page-panel v-model="pageInfo" v-if="pageInfo.RecordCount>0" v-on:change="reLoadData"></ui-page-panel>
+</div>
+<script type="text/javascript">
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            dataList: [],
+            pageInfo: { PageSize: 15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+            queryData: { searchField: "username", searchKeyword: "" },
+            selectList: [],
+        },
+        methods: {
+            reLoadData: function () {
+                var serverData = '{"' + vue.queryData.searchField + '":"' + vue.queryData.searchKeyword + '"}';
+                serverData = extend(vue.pageInfo, JSON.parse(serverData));
+                vue.ajax({
+                    url: "@Url.ActionUrl("PageListData")",
+                    data: serverData,
+                    success: function (responseData) {
+                        vue.dataList = responseData.Data;
+                        vue.pageInfo = responseData.PageInfo;
+                    }
+                });
+            },
+            handleSelectionChange: function (val) {
+                this.selectList = val;
+            },
+        },
+        watch: {
+            "queryData.searchField": function (newName, oldName) {
+                if (newName != oldName) {
+                    this.queryData.searchKeyword = "";
+                }
+            }
+        }
+    });
+    vue.reLoadData();
+</script>

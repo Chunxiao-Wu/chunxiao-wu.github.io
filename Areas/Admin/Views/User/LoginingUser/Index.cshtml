@@ -1,0 +1,153 @@
+﻿<style>
+    .dropdowndiv{display:flex;width:400px;padding:8px 15px;}
+    .dropdowndiv span{flex:1;font-size:12px;}
+</style>
+<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i><a href="javascript:void(0)" onclick="location.href=location.href">登录用户管理</a></el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <template>
+        <el-tabs type="card" v-model="queryData.state" @@tab-click="reLoadData">
+            <el-tab-pane label="全部" name="100"></el-tab-pane>
+            <el-tab-pane label="正常" name="1"></el-tab-pane>
+            <el-tab-pane label="失效" name="0"></el-tab-pane>
+        </el-tabs>
+    </template>
+    <div class="menu-bar-box">
+        <table border=0 cellpadding=0 cellspacing=0 class="tb-head form-inline form-group-sm">
+            <tr>
+                <td>
+                    <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{ids:getSelectedPropertys(selectList,'Id')},confirmMsg:'确定删除吗？',success:reLoadData,beforeExecute:function(){return checkSelectedItems(selectList)},})">
+                        删除
+                    </el-button>
+                </td>
+                <td align="right">
+                    <el-select v-model="queryData.fieldName" size="small" placeholder="请选择">
+                        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                    </el-select>
+                    <el-date-picker v-model="queryData.fieldValue" v-if="queryData.fieldName=='thedate' || queryData.fieldName=='expireDate'"
+                                    type="daterange"
+                                    size="small"
+                                    value-format="yyyy-MM-dd"
+                                    range-separator="至"
+                                    start-placeholder="开始日期"
+                                    end-placeholder="结束日期">
+                    </el-date-picker>
+                    <el-input size="small" v-model="queryData.fieldValue" style="width:225px;" v-else placeholder="输入关键词"></el-input>
+                    <el-button size="small" v-on:click="reLoadData">确定</el-button>
+                </td>
+            </tr>
+        </table>
+        <el-table ref="multipleTable" :data="dataList" tooltip-effect="dark" style="width: 100%" v-on:selection-change="handleSelectionChange" border>
+            <el-table-column type="selection" width="40"> </el-table-column>
+            <el-table-column prop="Name" label="用户名">
+                <template slot-scope="scope">
+                    <el-dropdown>
+                        <div size="small">
+                            {{scope.row.Username}}<i class="el-icon-arrow-down el-icon--right" style="font-size:12px;"></i>
+                        </div>
+                        <el-dropdown-menu slot="dropdown">
+                            <div class="dropdowndiv">
+                                <span>手机：{{scope.row.Mobile}}</span>
+                                <span>邮箱：{{scope.row.Email}}</span>
+                            </div>
+                            <div class="dropdowndiv">
+                                <span>登录ip：{{scope.row.Ip}}</span>
+                                <span>浏览器：{{scope.row.Browser}}</span>
+                            </div>
+                            <div class="dropdowndiv">
+                                <span>入口地址：{{scope.row.EntryUrl}}</span>
+                            </div>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </template>
+            </el-table-column>
+            <el-table-column label="用户组" align="center">
+                <template slot-scope="scope">
+                    {{getName(scope.row.MemberGroupId,memberGroupList)}}
+                </template>
+            </el-table-column>
+            <el-table-column prop="" label="部门" align="center">
+                <template slot-scope="scope">
+                    {{getName(scope.row.DepartmentId,departmentList)}}
+                </template>
+            </el-table-column>
+            <el-table-column label="管理角色" align="center">
+                <template slot-scope="scope">
+                    {{getName(scope.row.RoleId,roleList)}}
+                </template>
+            </el-table-column>
+            <el-table-column label="状态" align="center" width="90">
+                <template slot-scope="scope">
+                    <span v-if="scope.row.State==1" :class="'sp_state is-'+scope.row.State"></span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="Thedate" label="登录时间" align="center" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column prop="ExpireDate" label="过期时间" align="center" :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column label="管理" align="center">
+                <template slot-scope="scope">
+                    <div class="el-button-group">
+                        <el-button size="small" v-on:click="submit({url:'@Url.ActionUrl("Delete")',data:{id:scope.row.Id},confirmMsg:'确定删除吗？',success:reLoadData})">删除</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <ui-page-panel v-if="pageInfo.RecordCount>0" v-model="pageInfo" v-on:change="reLoadData"></ui-page-panel>
+    </div>
+</div>
+<script type="text/javascript">
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            dataList: [],
+            options: [{ value: 'username', label: '用户名' }, { value: 'ip', label: 'ip' }, { value: 'entryUrl', label: '入口地址' }, { value: 'thedate', label: '登录时间' }, { value: 'expireDate', label: '过期时间' }],
+            pageInfo: { PageSize: 15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+            memberGroupList:@Html.Raw(Html.GetOptionsJson("pa_member_group")),
+            departmentList:@Html.Raw(Html.GetOptionsJson("pa_department")),
+            roleList:@Html.Raw(Html.GetOptionsJson("pa_role")),
+            queryData: { fieldName: "username", fieldValue: "", state: "100" },
+            selectList: [],
+        },
+        methods: {
+            reLoadData: function () {
+                var vue = this;
+                var state = vue.queryData.state;
+                if (state == 100) state = "";
+                var serverData = '{"' + vue.queryData.fieldName + '":"' + vue.queryData.fieldValue + '","state":"' + state + '"}';
+                serverData = extend(JSON.parse(serverData), vue.pageInfo);
+                vue.ajax({
+                    url: "@Url.ActionUrl("PageListData")",
+                    data: serverData,
+                    success: function (data) {
+                        vue.dataList = data.Data;
+                        vue.pageInfo = data.PageInfo;
+                    }
+                });
+            },
+            handleSelectionChange: function (val) {
+                this.selectList = val;
+            },
+            getName: function (value, dataList) {
+                if (value == "0" || value == "") {
+                    return "";
+                }
+                var name = dataList.searchKey("value", value, "label");
+                if (name == null) {
+                    return "";
+                }
+                return name;
+            },
+        },
+        watch: {
+            "queryData.fieldName": function (newName, oldName) {
+                if (newName != oldName) {
+                    this.queryData.fieldValue = "";
+                }
+            }
+        }
+    });
+    vue.reLoadData();
+</script>

@@ -1,0 +1,154 @@
+﻿html{-webkit-text-size-adjust:none;width:100%;height:100%;}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,th,td,p,blockquote,hr,button,article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{margin:0px;padding:0px;}
+article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block;}
+audio,canvas,video{display:inline-block;*display: inline;*zoom:1;}
+body{width:100%;height:100%;word-wrap:break-word;padding:0px;text-align:left;font:13px/1.8 Helvetica,Tahoma,NSimSun,Arial,"Microsoft Yahei",\5B8B\4F53;color:#666;}
+input,select,textarea,button{font-size:100%;outline:none;}
+*:focus{outline:none}
+table{border-collapse:collapse;border-spacing:0;}
+img{border:0;}
+li{list-style:none;*margin-left:-1px}
+.left{float:left}
+.right{float:right}
+.clear{display:block;clear:both;font-size:0px;height:0px;line-height:0px;width:0px;margin:0px;padding:0px;overflow:hidden}
+span{vertical-align: middle;}
+a{color:#666;text-decoration:none;}
+a:hover{text-decoration:none;color:#2888e2}
+a:focus{outline:none;}
+p{margin-bottom:10px;min-height:20px}
+.text-left{text-align:left!important}
+.text-right{text-align:right!important}
+.text-center{text-align:center!important}
+
+.clearfix{_height:1%;*zoom:1;}
+.clearfix:before,.clearfix:after{content:".";display: block;height: 0;overflow: hidden;visibility: hidden;}
+.clearfix:after{clear:both;}
+
+.color-green,.color-green a{color:#46be8a}
+.color-blur,.color-blur a{color:dodgerblue}
+.color-orange,.color-orange a{color:darkorange}
+.color-red,.color-red a{color:crimson}
+
+
+/*公共样式*/
+.panel{background-color:#fff;margin:0px 10px;margin-bottom:15px}
+.panel .panel-heading{height:40px;margin:0px;padding:0px 15px;line-height:40px;font-size:14px;border-bottom:1px solid #EBEBEB}
+.panel .panel-heading .more a{font-size:12px;color:#999999}
+.panel .panel-body{padding:10px;margin:0px;}
+.list-body{min-height: 200px}
+.panel .fa{font-size:15px;padding-right:3px}
+.panel .completed{font-size:10px;}
+.panel .no-completed{font-size:10px;}
+
+.panel .steps{padding-bottom:15px}
+.panel .step{line-height:25px;}
+.panel .step-title{font-size:13px}
+
+
+.title-list{}
+.title-list li {height:30px;line-height: 30px;padding-left:10px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.title-list li .title {line-height:30px;}
+.title-list span.date {text-align:right;color:#999}
+/*网站当前位置样式*/
+.current-location {
+    clear: both;
+    margin: 0px 10px 10px 10px;
+    padding: 0px 5px;
+    color: #666666;
+    height: 40px;
+    line-height: 40px;
+    font-size: 13px;
+    overflow: hidden;
+    border-bottom: 0px dashed #ececec;
+}
+
+    .current-location span {
+        vertical-align: middle;
+    }
+
+    .current-location .glyphicon {
+        color: #999;
+        font-size: 12px;
+    }
+
+    .current-location .glyphicon-home {
+        margin-right: 3px
+    }
+
+    .current-location a {
+        vertical-align: middle;
+    }
+
+        .current-location a:hover {
+            color: #999999;
+        }
+
+    .current-location .left {
+        text-align: left;
+    }
+
+    .current-location .right {
+        text-align: right;
+        margin-right: 0px;
+    }
+
+/*网站主体内容区*/
+.main {
+    clear: both;
+    position: relative;
+    margin: 10px 15px;
+    height: 100%;
+}
+
+
+ .main .table td {
+        border-width: 0px
+    }
+
+
+
+/*顶部信息*/
+.account-info {
+    padding: 20px 20px 50px 20px;
+    position: relative;
+    border-bottom: 0px solid #ececec;
+    background-color: #fff;
+}
+.account-info .account-left {
+        float: left;
+        height:60px;
+        width:80px;
+        margin-top:20px
+    }
+  .account-info .account-left .fa{font-size:60px;line-height:60px;color:deepskyblue}
+  .account-info .account-body {
+        float: left;
+        overflow:hidden;
+    }
+    .account-info .account-body h4{
+       font-weight:500;font-size: 16px;line-height:30px;
+    }
+        .account-info .account-body h4 small{
+       font-size:12px;color:#999
+    }
+.account-info .account-body p{line-height:30px;margin:0px}
+.account-info .account-body p.security {font-size:12px;}
+.account-info .account-body p .fa{margin-right:10px;color: #53C58C}
+.account-info .account-body p .fa-2{font-size:20px}
+.account-info .account-body p .no-bind{color:#FA7A1C}
+
+.account-info .footer-link {position:absolute;text-align:right;bottom:10px;right:20px;}
+
+
+/*安全信息*/
+.security-info { margin: 10px 10px 0px 10px;}
+.security-info .fa-check{font-size:20px;color: #53C58C}
+.security-info .fa-close{font-size:20px;color:#FA7D21}
+.security-info table tr td{padding:15px 0px;}
+.security-info tr{border-bottom:1px dashed #cccccc}
+
+
+
+
+
+

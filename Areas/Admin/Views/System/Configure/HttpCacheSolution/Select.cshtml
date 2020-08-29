@@ -1,0 +1,82 @@
+﻿@{ 
+    string type = Request.QueryString["type"];
+}
+<div class="main" id="main">
+    <table border=0 cellpadding=0 cellspacing=0 class="table table-bordered" id="tbList">
+        <thead>
+            <tr>
+                <td align="center" rowspan="2">选择方案</td>
+                <td align="center" rowspan="1" colspan="2">缓存分钟</td>
+                <td align="center" rowspan="2">最大列表页码</td>
+                <td align="center" rowspan="2">排除参数</td>
+                <td align="center" rowspan="2">排除关键词</td>
+            </tr>
+            <tr>
+                <td align="center">栏目页</td>
+                <td align="center">信息页</td>
+            </tr>
+        </thead>
+        <tr class="item list-template-item" v-for="item in dataList">
+            <td align="left">
+                <el-radio v-model="selectedValue" :label="item.Id" v-on:change="setData">{{item.Name}}</el-radio>
+            </td>
+            <td align="center">{{item.ColumnCacheMinutes}}分钟</td>
+            <td align="center">{{item.DetailCacheMinutes}}分钟</td>
+            <td align="center">{{item.CacheMaxPage}}</td>
+            <td align="center">{{item.NocacheUrlParams}}</td>
+            <td align="center">{{item.NocacheUrlKeywords}}</td>
+        </tr>
+    </table>
+
+    <ui-page-panel v-model="pageInfo" v-on:change="reLoadData" v-if="pageInfo.RecordCount>0"></ui-page-panel>
+    <span class="lb_norecods" v-show="dataList.length==0">暂无记录!</span>
+
+    <div class="footer-submit-bar" style="padding-left:20px">
+        <el-button type="button" onclick="closeSelf()">关闭</el-button>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    var setData = "@Request.QueryString["setData"]";
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            pageInfo: { PageSize:15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+            dataList: [],
+            selectedValue: eval(setData)
+        },
+        methods: {
+            reLoadData: function () {
+                loadData();
+            },
+            setData: function () {
+                eval(setData + "=this.selectedValue");
+                closeSelf();
+            },
+        }
+    });
+
+        //加载数据
+    function loadData(pageInfo)
+    {
+        if (pageInfo == undefined)
+        {
+           pageInfo = vue.pageInfo;
+        }
+        var searchData = pageInfo;
+        vue.ajax({
+            url: "@Url.ActionUrl("PageListData")?_isload=1",
+            data: searchData,
+            success: function (responseData) {
+
+                if (responseData != "") {
+                    vue.dataList = responseData.Data;
+                    vue.pageInfo = responseData.PageInfo;
+                }
+            }
+        });
+    }
+    loadData();
+</script>

@@ -1,0 +1,45 @@
+﻿<div class="main">
+
+    <form method="post" id="form" class=" form-control-sm form form-lg">
+
+        <div class="form-group">
+            <label class="control-label">信息推送</label>
+            <div class="controls">
+                <select id="pushColumnIds" name="pushColumnIds" class="form-control  ui-convertData multiple-select" v-validate="dataType:'select',nullMsg:'请选择要推送的目标栏目！'"  multiple style="display:block;height:250px;" data-custom-params="url:'@Url.ActionUrl("LoadListByIds","Column")',textField:'Name'"></select>
+                <div class="btn-group btn-group-sm" >
+                    <a href="javascript:void(0)" class="btn btn-default btn-sm ui-dialog" data-custom-params="title:'选择栏目',url:'@Url.ActionUrl("Select","Column")?objname=#pushColumnIds',width:'600px',height:'90%',target:'_self'">选择推送栏目</a>
+                    <a href="javascript:void(0)" class="btn btn-default btn-sm ui-removeSelectedOptions" title="按住Ctrl键可实现多选" data-custom-params="obj:'#pushColumnIds'">删除选中</a>
+                </div>
+                <span class="help-block">选中的栏目必须属于信息页类型,否则推送将会被忽略！</span>
+            </div>
+        </div>
+
+        <div class="postarea">
+            <div class="form-group">
+                <div class="controls">
+                    <input type="hidden" name="ids" id="ids" />
+                    <button type="button" class="btn btn-sm btn-primary ui-pagePost" data-custom-params="url:'@Url.ActionUrl()',callback:'PostBack',beforeExecute:'BeforePost',accordingObj:'#form'">提交</button>
+                    <button type="button" class="btn btn-sm btn-default ui-closeDialog">关闭</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+    var $ids = $("#ids");
+    var $parentIds = parent.$(".checked-item");
+    if ($parentIds.length == 0) {
+        $(".main").html("父级对象未找到！")
+    }
+    var ids = $parentIds.GetValue();
+    $ids.val(ids)
+
+    function BeforePost() {
+        var ids = $ids.val();
+        if (ids == "") {
+            Msg("请选择要推送的信息!");
+            return false;
+        }
+        return true;
+    }
+</script>

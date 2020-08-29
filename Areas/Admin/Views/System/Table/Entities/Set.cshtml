@@ -1,0 +1,88 @@
+﻿<div class="main" id="main">
+    <table border=0 cellpadding=0 cellspacing=0 class="table table-bordered form-inline form-group-sm" id="tb_list" data-custom-params="formBind:true">
+        <thead>
+            <tr>
+                <td align="center" rowspan="2">字段</td>
+                <td align="center" rowspan="2">值类型</td>
+                <td align="center" rowspan="2">长度</td>
+                <td align="center" colspan="2">权限</td>
+                <td align="center" rowspan="2">搜索</td>
+                <td align="center" rowspan="2">
+                    列表页显示
+                </td>
+            </tr>
+            <tr>
+                <td align="center">可增</td>
+                <td align="center">可改</td>
+            </tr>
+        </thead>
+        <tr class="item list-template-item" v-for="dataItem in dataList">
+            <td align="center">
+                {{dataItem.name}}
+            </td>
+
+            <td align="center">{{dataItem.valueType}}</td>
+            <td align="center">{{dataItem.valueLength}}</td>
+
+            <td align="center">
+                <el-checkbox true-label="1" false-label="0"  v-model="dataItem.canAdd" v-on:change="updateItem(dataItem)"></el-checkbox>
+            </td>
+            <td align="center">
+                <el-checkbox true-label="1" false-label="0" v-model="dataItem.canEdit" v-on:change="updateItem(dataItem)"></el-checkbox>
+            </td>
+            <td align="center" style="width:250px">
+                <el-select class="form-control" name="searchType" id="searchType" v-model="dataItem.searchType" v-on:change="updateItem(dataItem)">
+                    <el-option value="" label="无"></el-option>
+                    <el-option value="precise" label="精确"></el-option>
+                    <el-option value="fuzzy" label="模糊"></el-option>
+                    <el-option value="in" label="多值(in)"></el-option>
+                    <el-option value="range" label="范围"></el-option>
+                </el-select>
+            </td>
+            <td align="center">
+                <el-checkbox true-label="1" false-label="0" v-model="dataItem.listItem" v-on:change="updateItem(dataItem)"></el-checkbox>
+            </td>
+        </tr>
+    </table>
+    <span class="help-block">提示：直接点击即可更新配置，非专业人员请勿随意更改配置</span>
+
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+ </div>
+
+
+<script type="text/javascript">
+
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            dataList:[],
+        },
+        methods: {
+            updateItem: function (dataItem)
+            {
+               var formData = { table: "@Request.QueryString["table"]"};
+               formData = extend(formData, dataItem);
+               this.submit({ url: "@Url.ActionUrl("updateConfig")", data: formData, showSuccessMsg:false});
+            }
+        }
+    });
+
+    //加载数据
+    function loadData()
+    {
+        var serverData = extend({});
+        vue.ajax({
+        url: "@Url.ActionUrl("FieldList")?table=@Request.QueryString["table"]",
+        data: serverData,
+        success: function (responseData) {
+            if (responseData != "") {
+                vue.dataList = responseData;
+            }
+            }
+        });
+    }
+    loadData();
+    </script>

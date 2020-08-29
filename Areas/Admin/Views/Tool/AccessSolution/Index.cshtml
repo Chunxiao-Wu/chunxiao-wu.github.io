@@ -1,0 +1,57 @@
+﻿@model string
+<div class="current-location">
+    <ul>
+        <li class="left"><i class="glyphicon glyphicon-home"></i><a href="javascript:void(0)" onclick="location.href=location.href">用户权限方案</a></li>
+        <li class="right"><a href="javascript:void(0)" onclick="LoadData()" title="刷新"><span class="glyphicon glyphicon-refresh"></span></a></li>
+    </ul>
+</div>
+
+<div class="main">
+    <table class="tb-head" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td class="btn-group">
+                <button type="button" class="btn btn-default btn-sm ui-selectInvert">反选</button>
+                <button type="button" class="btn btn-default dropdown-toggle btn-sm" data-toggle="dropdown" aria-expanded="false">
+                    菜单
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li>
+                        <a href="javascript:void(0)" class="ui-dialog" data-custom-params="title:'添加', url:'@Url.ActionUrl("Add")',width:'95%',height:'95%'">添加</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href="javascript:void(0)" class="ui-deleteMultiple" data-custom-params="url:'@Url.ActionUrl("Delete")',callBack:'LoadData'">删除</a></li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+    <table border=0 cellpadding=0 cellspacing=0 class="table table-bordered" id="tb_list">
+        <thead>
+            <tr>
+                <td align="center" style="width:40px"><input type="checkbox" title="选择" class="ui-selectInvert" data-custom-params="isReverse:false"></td>
+                <td align="center">id</td>
+                <td align="center">名称</td>
+                <td align="center">操作</td>
+            </tr>
+        </thead>
+            <tr class="item list-template-item" id="item_{id}">
+                <td align="center"><input type="checkbox" value="{id}" class="checked-item"></td>
+                <td align="center">{id}</td>
+                <td align="center">{name}</td>
+                <td align="center">
+                    <input type="hidden" name="id" value="{id}" />
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-default btn-sm ui-dialog" data-custom-params="title: '{name}-修改', url:'@Url.ActionUrl("Edit")?id={id}',width:'95%',height:'95%'">修改</button>
+                        <button type="button" data-custom-params="url:'@Url.ActionUrl("Delete")',callBack:'LoadData'" class="btn btn-default btn-sm ui-deleteSingle btn_delete_{is_sys}">删除</button>
+                    </div>
+                </td>
+            </tr>
+</table>
+</div>
+<script type="text/javascript">
+    function LoadData() {
+        var url = "@Url.ActionUrl("PageListData")"
+        $("#tb_list").ListBind({url:url,callBack: "LoadedInit" });
+    }
+    LoadData();
+</script>

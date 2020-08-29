@@ -1,0 +1,60 @@
+﻿
+<div class="main" id="main">
+    <el-form ref="form" label-width="150px" label-position="left">
+        <el-form-item label="AccessKeyId">
+            <el-input v-model="AccessKeyId" maxlength="18" v-validate="{data:AccessKeyId,dataType:'*',nullMsg:'请填写AccessKeyId!'}"></el-input>
+            <span class="help-block validate-tips-box">如果webapi需要开放给外部用户访问，建议添加不同AccessKeyId，并尽可能开放最小的权限</span>
+        </el-form-item>
+        <el-form-item label="AccessKeySecret">
+            <el-input v-model="AccessKeySecret" maxlength="32" v-validate="{data:AccessKeySecret,dataType:'*',nullMsg:'请填写AccessKeySecret!'}"></el-input>
+            <span class="help-block validate-tips-box">AccessKeySecret用于对webapi参数进行签名加密</span>
+        </el-form-item>
+        <el-form-item label="备注">
+            <el-input v-model="Remark" maxlength="50" v-validate="{data:Remark,dataType:'*',nullMsg:'请填写备注！'}"></el-input>
+            <span class="help-block validate-tips-box">仅用于对AccessKey进行标注，方便管理</span>
+        </el-form-item>
+        <el-form-item label="Api权限">
+            <ui-select v-model="Authorizations" :options="apiList" placeholder="请选择" multiple style="width:100%;">
+            </ui-select>
+            <span class="help-block validate-tips-box">AccessKey请根据具体场景设置具体权限，不选择则默认所有权限</span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    //绑定数据
+    var id = request("id");
+    var apiList = @Html.Raw(ViewBag.WebApiList);
+    var formData = { Id: 0, AccessKeyId: "@ViewBag.AccessKeyId", AccessKeySecret: "@ViewBag.AccessKeySecret", Remark: "", Authorizations:""}
+    if (id!= "")
+    {
+       formData = @Html.Raw(Model ?? "{}");
+    }
+    formData.Authorizations = formData.Authorizations.split(",");
+    var vue = new Vue({
+        el: "#main",
+        data: formData,
+        computed: {
+            apiList: function () {
+                return apiList;
+            }
+        },
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({tipsStyle: 1 });//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, success: "PostBack()"});
+                }
+            }
+        },
+    });
+    function PostBack() {
+        if (id == "") {
+            location.href = location.href;
+        }
+        parent.loadData();
+    }
+</script>

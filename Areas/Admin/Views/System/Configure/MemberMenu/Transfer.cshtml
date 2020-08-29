@@ -1,0 +1,57 @@
+﻿@model string
+<div class="main no-padding no-border">
+    <table border=0 cellpadding=0 cellspacing=0 class="table table-bordered form-inline form-group-sm" id="tb_list">
+        <thead>
+            <tr>
+                <td style="width:45px">选择</td>
+                <td align="center">菜单</td>
+            </tr>
+        </thead>
+        <tr class="item list-template-item  parent_{parentGuid}" id='item_{id}' data-parentId="{parentId}" data-isFinal="{isFinal}" data-id="{id}">
+            <td align="center"><input type="radio" id="id" name="id" value="{id}" class="checked-item item_is_{isFinal}"></td>
+            <td align="center" style="text-align:left">{space}<span class="node node_{isFinal}"></span><span>{name}</span></td>
+        </tr>
+    </table>
+    <div class="footerarea">
+        提示：请选择要转移的目标分类！
+    </div>
+
+    <div class="submit-footerbar">
+        <label class="control-label"></label>
+        <div class="controls">
+            <form class=" form-group-sm form" method="post">
+                <input type="hidden" name="targetId" id="targetId" value="0" />
+                <input type="hidden" name="ids" id="ids" value="" />
+                <button type="button" class="btn btn-sm  btn-primary ui-pagePost" data-custom-params="url:'@Url.ActionUrl()',beforeExecute:'BeforeExecuting',callBack:'PostCloseRefreshBack'">转移</button>
+                <button type="button" class="btn btn-sm btn-default ui-closeDialog">关闭</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    function LoadData()
+    {
+        var jsonUrl ="@Url.ActionUrl("ListData")";
+        $("#tb_list").TreeBind({url:jsonUrl,callBack: "LoadedInit",showFooter:false });
+    }
+
+    function LoadedInit()
+    {
+        $(".item_is_1").attr("disabled", "disabled");
+    }
+    LoadData();
+
+    var ids = parent.$(".checked-item").GetValue();
+    $("#ids").val(ids);
+
+    function BeforeExecuting() {
+        var id = $(".checked-item").GetChecked();
+        if (id == "") {
+            Alert("请选择要转移的目标菜单!")
+            return false;
+        }
+        $("#targetId").val(id);
+        return true;
+    }
+</script>

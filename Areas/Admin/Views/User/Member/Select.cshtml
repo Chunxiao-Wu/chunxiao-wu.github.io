@@ -1,0 +1,156 @@
+﻿<style>
+    .dropdowndiv {
+        display: flex;
+        width: 400px;
+        padding: 8px 15px;
+    }
+
+        .dropdowndiv span {
+            flex: 1;
+            font-size: 12px;
+        }
+</style>
+<div class="main" id="main">
+    <table border=0 cellpadding=0 cellspacing=0 class="tb-head form-inline form-group-sm">
+        <tr>
+            <td align="right">
+                <el-select size="small" v-model="queryData.memberGroupId" v-on:change="loadData">
+                    <el-option value="" label="所有会员组"></el-option>
+                    <el-option :value="item.Id" :key="item.Id" :label="item.Name" v-for="item in memberGroupList"></el-option>
+                </el-select>
+                <el-cascader size="small" v-model="queryData.departmentId" placeholder="所有部门" v-on:change="loadData" :options="@Html.GetTreeJson("pa_department","name","","xuhao asc")" :props="{ expandTrigger: 'hover'}" clearable></el-cascader>
+                <el-input size="small" v-model="queryData.username" style="width:150px;" placeholder="请输入用户名查询"></el-input>
+                <el-button size="small" v-on:click="loadData">搜索</el-button>
+            </td>
+        </tr>
+    </table>
+    <el-table ref="multipleTable" :data="dataList" row-key="Id" tooltip-effect="dark" border highlight-current-row style="width: 100%" v-on:select="handleSelectionChange">
+        <el-table-column type="selection" width="40" align="center"></el-table-column>
+        <el-table-column prop="Name" label="用户名">
+            <template slot-scope="scope">
+                <el-dropdown>
+                    <div size="small" style="cursor:pointer;">
+                        {{scope.row.Username}}<i class="el-icon-arrow-down el-icon--right" style="font-size:12px;"></i>
+                    </div>
+                    <el-dropdown-menu slot="dropdown">
+                        <div class="dropdowndiv">
+                            会员Id：{{scope.row.Id}}
+                        </div>
+                        <div class="dropdowndiv">
+                            <span>会员组：{{GetName(memberGroupList,scope.row.MemberGroupId,"Name")}}</span>
+                            <span>部门：{{GetName(departmentList,scope.row.DepartmentId,"Name")}}</span>
+                        </div>
+                        <div class="dropdowndiv">
+                            <span>Email：{{scope.row.Email}}</span>
+                            <span>手机：{{scope.row.Mobile}}</span>
+                        </div>
+                    </el-dropdown-menu>
+                </el-dropdown>
+            </template>
+        </el-table-column>
+    </el-table>
+    <ui-page-panel v-model="pageInfo" v-on:change="loadData" v-if="pageInfo.RecordCount>0"></ui-page-panel>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" onclick="closeSelf()">确定</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+<script type="text/javascript">
+    var setData = "@Request.QueryString["setData"]";
+    var ref = "@Request.QueryString["ref"]";
+    var options = "@Request.QueryString["options"]";
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            pageInfo: { PageSize: 10, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+            dataList: [],
+            memberGroupList:@Html.Raw(JsonHelper.JsonParse(Html.GetMemberGroupList())),
+            departmentList:@Html.Raw(Html.GetDepartmentListJson()),
+            queryData: { memberGroupId: "", departmentId: "", username: "" }
+        },
+        methods: {
+            handleSelectionChange: function (selection, row) {
+                var isTrue = false;
+                selection.some(function (item) {
+                    if (item.Id == row.Id) {
+                        isTrue = true;
+                        return isTrue;
+                    }
+                })
+                var uids = eval(setData);
+                var uidsSplit = uids.split(",");
+                if (isTrue) {
+                    selection.forEach(function (item) {
+                        if (uidsSplit.indexOf(item.Id.toString()) == -1)
+                        {
+                            uidsSplit.push(item.Id);
+                        }
+                    })
+                    uids = uidsSplit.toString();
+                    eval(setData + "=uids");
+                    var optiondata = eval(ref + ".addOptions(selection, \"Id\", \"Username\")");
+                    eval(options + "=optiondata");
+                } else {
+                    uidsSplit.splice(uidsSplit.indexOf(row.Id.toString()), 1);
+                    uids = uidsSplit.toString();
+                    eval(setData + "=uids");
+                }
+            },
+            loadData: function () {
+                loadData();
+            },
+            GetName: function (dataList, id, fieldName) {
+                var name = "/";
+                if (dataList == undefined) {
+                    return name;
+                }
+                dataList.some(function (item) {
+                    if (item.Id == id) {
+                        name = item[fieldName];
+                        return true;
+                    }
+                })
+                return name
+            }
+        },
+        watch: {
+            "dataList": function (newUids, oldUids) {
+                this.$nextTick(function () {
+                    var uids = eval(setData);
+                    if (uids != undefined && uids.length > 0) {
+                        var newsetData = uids;
+                        if (typeof uids != "object") {
+                            newsetData = uids.split(",").map(Number);
+                        }
+                        vue.dataList.forEach(function (item) {
+                            if (newsetData.indexOf(item.Id) != -1) {
+                                vue.$refs.multipleTable.toggleRowSelection(item);
+                            }
+                        })
+                    }
+                });
+            }
+        }
+    });
+            //加载数据
+    function loadData()
+    {
+        var serverData = extend(vue.pageInfo, vue.queryData);
+        if (typeof serverData.departmentId == "object")
+        {
+            serverData.departmentId = serverData.departmentId[serverData.departmentId.length-1]
+        }
+        ajax({
+            url: "@Url.ActionUrl("PageListData")",
+            data: serverData,
+            success: function (responseData) {
+                if (responseData != "") {
+                    vue.dataList = responseData.Data;
+                    vue.pageInfo = responseData.PageInfo;
+                }
+            }
+        });
+    }
+    loadData();
+</script>

@@ -1,0 +1,115 @@
+﻿<style>
+    .lb-enabled-0 {
+        color: #999
+    }
+    .el-tab-pane {
+        display: none;
+    }
+</style>
+<div class="main" id="main">
+    <div class="breadcrumb-box">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item><i class="fa fa-home fa-fw"></i>插件管理</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <template>
+        <el-tabs type="card" @@tab-click="handleClick">
+            <el-tab-pane label="全部" name="0"></el-tab-pane>
+            <el-tab-pane label="已启用" name="1"></el-tab-pane>
+            <el-tab-pane label="未启用" name="2"></el-tab-pane>
+        </el-tabs>
+    </template>
+    <table class="tb-head" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td align="right">
+                <div class="form-inline form-group-sm">
+                    <template>
+                        <el-select v-model="value" size="small" placeholder="请选择">
+                            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                        </el-select>
+                        <el-input style="width:225px;" size="small" v-model="input" placeholder="请输入内容"></el-input>
+                        <input type="hidden" name="enabled" id="enabled" class="ui-queryString" />
+                        <el-button size="small" v-on:click="loadData()">搜索</el-button>
+                    </template>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <el-table ref="multipleTable" :data="dataList" row-key="Id" tooltip-effect="dark" border highlight-current-row style="width: 100%">
+        <el-table-column prop="Plugin" label="插件"></el-table-column>
+        <el-table-column prop="Name" label="名称"></el-table-column>
+        <el-table-column prop="Introduction" label="介绍" :show-overflow-tooltip="true" width="600"></el-table-column>
+        <el-table-column prop="Author" label="作者"></el-table-column>
+        <el-table-column prop="InstallDate" label="安装时间"></el-table-column>
+        <el-table-column  label="状态" align="center">
+        <template slot-scope="scope">
+            <el-alert center style="background-color:transparent" title="已启用" type="success" v-show="scope.row.Enabled==1" :closable="false" show-icon></el-alert>
+            <el-alert center style="background-color:transparent"  title="未启用" type="warning" v-show="scope.row.Enabled==0" :closable="false" show-icon></el-alert>
+         </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center">
+            <template slot-scope="scope">
+                <div class="el-button-group">
+                    <el-button size="small" v-show="scope.row.Enabled==1" v-on:click="dialog({title:'插件关闭',url:'@Url.ActionUrl("Set")?act=close&pluginName='+scope.row.Plugin,width:'750px',height:'380px'})">关闭</el-button>
+                    <el-button size="small" v-show="scope.row.Enabled==0" v-on:click="dialog({title:'插件开启',url:'@Url.ActionUrl("Set")?act=open&pluginName='+scope.row.Plugin,width:'750px',height:'420px'})">开启</el-button>
+                    <el-button size="small" v-show="scope.row.Enabled==0" v-on:click="dialog({title:'插件卸载',url:'@Url.ActionUrl("Set")?act=uninstall&pluginName='+scope.row.Plugin,width:'750px',height:'380px'})">卸载</el-button>
+                </div>
+            </template>
+        </el-table-column>
+     </el-table>
+    <ui-page-panel v-model="pageInfo" v-show="pageInfo.RecordCount>0" v-on:change="loadData()"></ui-page-panel>
+</div>
+
+<script type="text/javascript">
+
+    //vue实例化
+    var vue = new Vue({
+        el: "#main",
+        data: {
+            dataList: [],
+            options: [{ value: 'name', label: '插件名称' }, { value: 'author', label: '插件作者' }, { value: 'introduction', label: '插件简介' }],
+            value: "name",
+            input: "",
+            queryName: { enabled: "" },
+            pageInfo: { PageSize: 15, CurrentPage: 1, RecordCount: 0, PageCount: 1 },
+
+        },
+        methods: {
+            loadData: function () {
+                loadData();
+            },
+            handleClick: function(tab, event) {
+                switch (tab.name) {
+                    case "1":
+                        this.queryName.enabled = "1";
+                        break;
+                    case "2":
+                        this.queryName.enabled = "0";
+                        break;
+                    default:
+                        this.queryName.enabled = "";
+                        break;
+                }
+                this.loadData();
+            }
+        }
+    });
+
+
+    //加载数据
+    function loadData() {
+        var query = JSON.parse('{"' + vue.value + '":"' + vue.input + '"}');
+        query = extend(query, vue.queryName);
+        query = extend(query, vue.pageInfo);
+        vue.ajax({
+            url: "@Url.ActionUrl("PageListData")",
+            data: query,
+            success: function (responseData) {
+                vue.dataList = responseData.Data;
+                vue.pageInfo = responseData.PageInfo;
+            }
+        });
+    }
+    loadData();
+</script>

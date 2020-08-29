@@ -1,0 +1,163 @@
+﻿@{
+    int parentId = StringHelper.Format<int>(Request.QueryString["parentId"]);
+    int xuhao = StringHelper.Format<int>(Request.QueryString["xuhao"]);
+    if (xuhao == 0)
+    {
+        xuhao = 1;
+    }
+    else
+    {
+        xuhao++;
+    }
+}
+<div class="main" id="main">
+    <el-form ref="form" label-width="150px" label-position="left">
+        <el-form-item label="菜单名称">
+            <el-input v-model="Name" maxlength="30" v-validate="{data:Name,dataType:'*',nullMsg:'请填写菜单名称!'}"></el-input>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+
+        <el-form-item label="菜单类型" v-if="ParentId>0">
+            <el-radio-group v-model="IsFinal">
+                <el-radio :label=1 :disabled="Id>0">最终菜单</el-radio>
+                <el-radio :label=0 :disabled="Id>0">分类节点</el-radio>
+            </el-radio-group>
+            <span class="help-block validate-tips-box">如果需要在当前菜单下继续添加子菜单，请选择分类节点</span>
+        </el-form-item>
+
+
+        <div v-show="IsFinal==1">
+
+            <el-form-item label="视图类型">
+                <el-radio-group v-model="ViewType">
+                    <el-radio :label="0">MVC模式</el-radio>
+                    <el-radio :label="1">自定义文件</el-radio>
+                </el-radio-group>
+                <span class="help-block validate-tips-box"></span>
+            </el-form-item>
+
+            <div v-show="ViewType==0">
+                <el-form-item label="命名空间">
+                    <el-input v-model="NameSpace" maxlength="100" v-validate="{data:NameSpace,dataType:'*',nullMsg:'请填写命名空间!',errorMsg:'请填写正确的命名空间!',ignore:(IsFinal==0 || ViewType==1)}"></el-input>
+                    <span class="help-block validate-tips-box">必须填写，表示控制器在的命名空间</span>
+                </el-form-item>
+                <el-form-item label="控制器名">
+                    <el-input v-model="Controller" maxlength="50" v-validate="{data:Controller,dataType:'string',nullMsg:'请填写控制器名!',errorMsg:'请填写正确的控制器名!',ignore:(IsFinal==0 || ViewType==1)}"></el-input>
+                    <span class="help-block validate-tips-box">必须填写,其中Controller后缀不需要填写</span>
+                </el-form-item>
+                <el-form-item label="方法名">
+                    <el-input v-model="Action" maxlength="50" v-validate="{data:Action,dataType:'string',nullMsg:'请填写方法名!',errorMsg:'请填写正确的方法名!',ignore:(IsFinal==0 || ViewType==1)}"></el-input>
+                    <span class="help-block validate-tips-box">留空则默认index</span>
+                </el-form-item>
+                <el-form-item label="Area(区域)">
+                    <el-input v-model="Area" maxlength="50" ></el-input>
+                    <span class="help-block validate-tips-box">如果控制器不属于任何区域，请留空</span>
+                </el-form-item>
+
+                <el-form-item label="插件名称">
+                    <el-input v-model="PluginName" maxlength="50"></el-input>
+                    <span class="help-block validate-tips-box">如果当前菜单属于插件，请填写上插件名称，否则请留空。</span>
+                </el-form-item>
+               </div>
+
+            <el-form-item label="文件路径" v-show="IsFinal==1 && ViewType==1">
+                <el-input v-model="ZdyUrl" maxlength="100" v-validate="{data:ZdyUrl,dataType:'*',nullMsg:'请填写URL路径!',ignore:(IsFinal==0 || ViewType==0)}"></el-input>
+                <span class="help-block validate-tips-box">菜单文件的路径，不要带域名前缀，如：/appPlugins/plunName/index.html</span>
+            </el-form-item>
+
+            </div>
+
+        <div v-show="ParentId>0 && IsFinal==0">
+            <el-form-item label="节点图标">
+                <el-input v-model="Icon" maxlength="30"></el-input>
+                <span class="help-block validate-tips-box">留空则系统默认，填写Font Awesome的对应css样式即可,<a href="/incs/font-awesome/demo.html" target="blank">点击查看图标样式</a></span>
+            </el-form-item>
+
+            <el-form-item label="子级默认展开">
+                <el-radio-group v-model="IsExpand">
+                    <el-radio :label=1>是</el-radio>
+                    <el-radio :label=0>否</el-radio>
+                </el-radio-group>
+                <span class="help-block validate-tips-box">用于设置包含的子菜单的展开方式</span>
+            </el-form-item>
+        </div>
+
+
+        <el-form-item label="目标窗口" v-show="ParentId>0 && IsFinal==1">
+            <el-radio-group v-model="Target">
+                <el-radio label="">框架内打开</el-radio>
+                <el-radio label="_blank">新窗口</el-radio>
+            </el-radio-group>
+            <span class="help-block validate-tips-box">浏览器中点击菜单后页面的打开方式</span>
+        </el-form-item>
+
+        <el-form-item label="是否启用">
+            <el-radio-group v-model="State">
+                <el-radio :label=1>是</el-radio>
+                <el-radio :label=0>否</el-radio>
+            </el-radio-group>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+        <el-form-item label="序号">
+            <el-input v-model="Xuhao" maxlength="5" v-validate="{data:Xuhao,dataType:'numeric',nullMsg:'请填写序号!',errorMsg:'请填写正确序号!'}" onblur="if(!IsNum(this.value)){this.value='1'}"></el-input>
+            <span class="help-block validate-tips-box"></span>
+        </el-form-item>
+    </el-form>
+    <div class="footer-submit-bar" style="padding-left:100px">
+        <el-button type="primary" v-on:click="postSubmit">提交</el-button>
+        <el-button onclick="closeSelf()">关闭</el-button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    //绑定数据
+    var id = request("id");
+    var formData =@Html.Raw(Model ?? "{}");
+    formData.Guid = "@ViewBag.Guid";
+    if (id == "")
+    {
+        formData.IsExpand = 1;
+        formData.State = 1;
+        formData.Xuhao = @xuhao;
+        formData.ParentId =@parentId;
+        formData.ViewType = 0;
+        if (formData.ParentId == 0)
+        {
+            formData.IsFinal = 0;
+        }
+        else
+        {
+            formData.IsFinal = 1;
+        }
+    }
+    formData.ZdyUrl = (formData.ZdyUrl == null ? "" : formData.ZdyUrl);
+    var vue = new Vue({
+        el: "#main",
+        data: formData,
+        methods: {
+            postSubmit: function () {
+                var validated = this.validateForm({});//jquery表单验证
+                if (validated) {
+                    this.submit({ url: "@Url.ActionUrl()", data: formData, success: function () { postBack()} });
+                }
+            }
+        },
+    });
+
+  function postBack() {
+        parent.loadData();
+        var url = location.href;
+        if (id == "")
+        {
+            if (url.indexOf("xuhao=") < 0)
+            {
+                location.href = url + "&xuhao=" + formData.Xuhao;
+            }
+            else
+            {
+                location.href = url.replace(/(\?|&)xuhao=[0-9]*/, "$1xuhao=@xuhao");
+            }
+        }
+    }
+
+</script>
